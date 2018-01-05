@@ -16,7 +16,8 @@
                 {
                     Host = "api.patchkit.net",
                     UseHttps = false,
-                    Port = 0
+                    Port = 0,
+                    Timeout = 5000
                 },
                 CacheServers =
                     new[]
@@ -25,19 +26,22 @@
                         {
                             Host = "api-cache-1.patchkit.net",
                             Port = 43230,
-                            UseHttps = false
+                            UseHttps = false,
+                            Timeout = 5000
                         },
                         new ApiConnectionServer
                         {
                             Host = "api-cache-2.patchkit.net",
                             Port = 43230,
-                            UseHttps = false
+                            UseHttps = false,
+                            Timeout = 5000
                         },
                         new ApiConnectionServer
                         {
                             Host = "api-cache-3.patchkit.net",
                             Port = 43230,
-                            UseHttps = false
+                            UseHttps = false,
+                            Timeout = 5000
                         }
                     }
             };
