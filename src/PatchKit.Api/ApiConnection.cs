@@ -18,8 +18,6 @@ namespace PatchKit.Api
 
             public string Query;
 
-            public int TimeoutMultipler;
-
             public List<Exception> MainServerExceptions;
 
             public List<Exception> CacheServersExceptions;
@@ -28,6 +26,10 @@ namespace PatchKit.Api
         private readonly ApiConnectionSettings _connectionSettings;
 
         private readonly JsonSerializerSettings _jsonSerializerSettings;
+
+        public IRequestTimeoutCalculator RequestTimeoutCalculator = new SimpleRequestTimeoutCalculator();
+
+        public IRequestRetryStrategy RequestRetryStrategy = new NoneRequestRetryStrategy();
 
         public IHttpClient HttpClient = new DefaultHttpClient();
 
@@ -41,9 +43,6 @@ namespace PatchKit.Api
         /// connectionSettings - <see cref="ApiConnectionServer.Host"/> of one of the servers is null.
         /// or
         /// connectionSettings - <see cref="ApiConnectionServer.Host"/> of one of the servers is empty.
-        /// </exception>
-        /// <exception cref="System.ArgumentOutOfRangeException">
-        /// connectionSettings - <see cref="ApiConnectionServer.Timeout"/> of one of the servers is less than zero and is not <see cref="System.Threading.Timeout.Infinite" />.
         /// </exception>
         public ApiConnection(ApiConnectionSettings connectionSettings)
         {
@@ -73,17 +72,12 @@ namespace PatchKit.Api
                 throw new ArgumentNullException("connectionSettings",
                     "ApiConnectionServer.Host of one of the servers is null.");
             }
+
             if (string.IsNullOrEmpty(server.Host))
             {
                 // ReSharper disable once NotResolvedInText
                 throw new ArgumentNullException("connectionSettings",
                     "ApiConnectionServer.Host of one of the servers is empty");
-            }
-            if (server.Timeout < 0 && server.Timeout != System.Threading.Timeout.Infinite)
-            {
-                // ReSharper disable once NotResolvedInText
-                throw new ArgumentOutOfRangeException("connectionSettings",
-                    "ApiConnectionServer.Timeout of one of the servers is less than zero and is not System.Threading.Timeout.Infinite");
             }
         }
 
@@ -93,14 +87,6 @@ namespace PatchKit.Api
         protected T ParseResponse<T>(IApiResponse response)
         {
             return JsonConvert.DeserializeObject<T>(response.Body, _jsonSerializerSettings);
-        }
-
-        private HttpGetRequest CreateHttpRequest(Uri uri)
-        {
-            return new HttpGetRequest
-            {
-                Address = uri
-            };
         }
 
         private bool TryGetResponse(ApiConnectionServer server, Request request, ServerType serverType,
@@ -139,7 +125,7 @@ namespace PatchKit.Api
                 var httpRequest = new HttpGetRequest
                 {
                     Address = uri,
-                    Timeout = server.Timeout * request.TimeoutMultipler
+                    Timeout = RequestTimeoutCalculator.Timeout
                 };
 
                 Logger.LogTrace($"Setting request timeout to {httpRequest.Timeout}ms");
@@ -153,6 +139,8 @@ namespace PatchKit.Api
                 {
                     Logger.LogDebug("Response is valid.");
                     response = new ApiResponse(httpResponse);
+                    RequestRetryStrategy.OnRequestSuccess();
+                    RequestTimeoutCalculator.OnRequestSuccess();
                     return true;
                 }
 
@@ -172,12 +160,18 @@ namespace PatchKit.Api
             }
             catch (WebException webException)
             {
+                RequestTimeoutCalculator.OnRequestFailure();
+                RequestRetryStrategy.OnRequestFailure();
+                
                 Logger.LogWarning("Unable to get any response from server.", webException);
                 exceptionsList.Add(webException);
                 return false;
             }
             catch (ApiServerConnectionException e)
             {
+                RequestTimeoutCalculator.OnRequestFailure();
+                RequestRetryStrategy.OnRequestFailure();
+                
                 Logger.LogWarning("Unable to get valid response from server.", e);
                 exceptionsList.Add(e);
                 return false;
@@ -226,39 +220,6 @@ namespace PatchKit.Api
             return value >= min && value <= max;
         }
 
-        private bool TryGetResponseFromCacheServer(ApiConnectionServer server, Request request,
-            out IApiResponse response)
-        {
-            return TryGetResponse(server, request, ServerType.CacheServer, out response);
-        }
-
-        private bool TryGetResponseFromMainServer(Request request, out IApiResponse response)
-        {
-            return TryGetResponse(_connectionSettings.MainServer, request, ServerType.MainServer,
-                out response);
-        }
-
-        private bool TryGetResponse(Request request, out IApiResponse apiResponse)
-        {
-            if (TryGetResponseFromMainServer(request, out apiResponse))
-            {
-                return true;
-            }
-
-            if (_connectionSettings.CacheServers != null)
-            {
-                foreach (var cacheServer in _connectionSettings.CacheServers)
-                {
-                    if (TryGetResponseFromCacheServer(cacheServer, request, out apiResponse))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
         /// <summary>
         /// Retrieves specified resource from API.
         /// </summary>
@@ -268,46 +229,53 @@ namespace PatchKit.Api
         /// <exception cref="ApiConnectionException">Could not connect to API.</exception>
         public IApiResponse GetResponse(string path, string query)
         {
-            Logger.LogDebug($"Getting response for path: '{path}' and query: '{query}'...");
-
-            IApiResponse response;
-
-            var mainServerExceptions = new List<Exception>();
-            var cacheServersExceptions = new List<Exception>();
-
-            if (!TryGetResponse(new Request
+            try
             {
-                Path = path,
-                Query = query,
-                TimeoutMultipler = 1,
-                MainServerExceptions = mainServerExceptions,
-                CacheServersExceptions = cacheServersExceptions
-            }, out response))
-            {
-                // Double timeout and try again.
+                Logger.LogDebug($"Getting response for path: '{path}' and query: '{query}'...");
 
-                Logger.LogWarning(
-                    "Failed to get response with regular timeout. Trying again with double timeout...");
-
-                if (!TryGetResponse(new Request
+                var request = new Request
                 {
                     Path = path,
                     Query = query,
-                    TimeoutMultipler = 2,
-                    MainServerExceptions = mainServerExceptions,
-                    CacheServersExceptions = cacheServersExceptions
-                }, out response))
+                    MainServerExceptions = new List<Exception>(),
+                    CacheServersExceptions = new List<Exception>()
+                };
+
+                IApiResponse apiResponse;
+
+                do
                 {
-                    Logger.LogError("Failed to get response with double timeout.");
+                    if (!TryGetResponse(_connectionSettings.MainServer, request, ServerType.MainServer,
+                        out apiResponse))
+                    {
+                        if (_connectionSettings.CacheServers != null)
+                        {
+                            foreach (var cacheServer in _connectionSettings.CacheServers)
+                            {
+                                if (TryGetResponse(cacheServer, request, ServerType.CacheServer, out apiResponse))
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } while (apiResponse == null && RequestRetryStrategy.ShouldRetry);
 
-                    throw new ApiConnectionException(mainServerExceptions, cacheServersExceptions);
+                if (apiResponse == null)
+                {
+                    throw new ApiConnectionException(request.MainServerExceptions, request.CacheServersExceptions);
                 }
+
+                Logger.LogDebug("Successfully got response.");
+                Logger.LogTrace($"Response body: {apiResponse.Body}");
+
+                return apiResponse;
             }
-
-            Logger.LogDebug("Successfully got response.");
-            Logger.LogTrace($"Response body: {response.Body}");
-
-            return response;
+            catch (Exception e)
+            {
+                Logger.LogError("Failed to get response.", e);
+                throw;
+            }
         }
 
         private enum ServerType
