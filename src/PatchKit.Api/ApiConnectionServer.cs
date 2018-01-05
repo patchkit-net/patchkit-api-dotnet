@@ -43,10 +43,5 @@ namespace PatchKit.Api
         /// Set to true to use https instead of http.
         /// </summary>
         public bool UseHttps;
-
-        /// <summary>
-        /// Timeout for connection.
-        /// </summary>
-        public int Timeout;
     }
 }
