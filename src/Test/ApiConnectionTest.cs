@@ -21,17 +21,20 @@ namespace PatchKit.Api
             {
                 MainServer = new ApiConnectionServer()
                 {
-                    Host = "main_server"
+                    Host = "main_server",
+                    Timeout = 1
                 },
                 CacheServers = new[]
                 {
                     new ApiConnectionServer()
                     {
-                        Host = "cache_server_1"
+                        Host = "cache_server_1",
+                        Timeout = 1
                     },
                     new ApiConnectionServer()
                     {
-                        Host = "cache_server_2"
+                        Host = "cache_server_2",
+                        Timeout = 1
                     }
                 }
             };

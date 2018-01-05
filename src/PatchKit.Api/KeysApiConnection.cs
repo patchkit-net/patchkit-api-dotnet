@@ -16,7 +16,8 @@
                 {
                     Host = "keys.patchkit.net",
                     Port = 43240,
-                    UseHttps = false
+                    UseHttps = false,
+                    Timeout = 5000
                 },
                 CacheServers = null
             };
