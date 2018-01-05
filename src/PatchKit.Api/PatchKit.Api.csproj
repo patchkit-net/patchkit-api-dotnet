@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6AB60F43-EBF5-4122-A437-D1C4E1A41608}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PatchKit.Api</RootNamespace>
+    <AssemblyName>PatchKit.Api</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApiConnection.cs" />
+    <Compile Include="ApiConnectionServer.cs" />
+    <Compile Include="ApiServerConnectionException.cs" />
+    <Compile Include="KeysApiConnection.cs" />
+    <Compile Include="KeysApiConnection.Generated.cs" />
+    <Compile Include="MainApiConnection.cs" />
+    <Compile Include="ApiConnectionException.cs" />
+    <Compile Include="ApiConnectionSettings.cs" />
+    <Compile Include="ApiResponse.cs" />
+    <Compile Include="IApiResponse.cs" />
+    <Compile Include="MainApiConnection.Generated.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\VersionInfo.cs" />
+    <Compile Include="ApiResponseException.cs" />
+    <Compile Include="Utilities\UnixTimeConvert.cs" />
+    <Compile Include="Models\*\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="PatchKit.Logging" Version="1.*" />
+    <PackageReference Include="PatchKit.Network" Version="1.*" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="RegenerateApi">
+    <Exec Command="ruby Generator/generate.rb" />
+  </Target>
+  <Target Name="ClearPackages">
+    <ItemGroup>
+      <Packages Include="*.nupkg" />
+    </ItemGroup>
+    <Delete Files="@(Packages)" />
+  </Target>
+  <Target Name="LocalPublishPackage" DependsOnTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
+    <CallTarget Targets="ClearPackages" />
+    <Exec Command="nuget pack PatchKit.Api.csproj -MsbuildPath $(MSBuildToolsPath) -Prop Configuration=Debug" />
+    <Exec Command="nuget init . ~/.nuget_local" />
+  </Target>
+  <Target Name="PublishPackage" DependsOnTargets="Build" Condition=" '$(Configuration)' == 'Release' ">
+    <CallTarget Targets="ClearPackages" />
+    <Exec Command="nuget pack PatchKit.Api.csproj -MsbuildPath $(MSBuildToolsPath) -Prop Configuration=Release" />
+    <Exec Command="nuget push *.nupkg -Source https://api.nuget.org/v3/index.json" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+         Other similar extension points exist, see Microsoft.Common.targets.
+    <Target Name="BeforeBuild">
+    </Target>
+    <Target Name="AfterBuild">
+    </Target>
+    -->
+</Project>

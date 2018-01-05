@@ -1,0 +1,7 @@
+/src/PatchKit.Api/obj/
+/src/PatchKit.Api/bin/
+/src/PatchKit.Api/*.nupkg
+/src/Test/obj/
+/src/Test/bin/
+/src/packages/
+/src/.idea/
