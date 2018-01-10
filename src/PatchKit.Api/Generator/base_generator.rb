@@ -47,6 +47,7 @@ class BaseGenerator
     when "number"
       resolve_number_type(type)
     else
+      return type["type"].sub!("#/definitions/", "") if type["type"].start_with?("#/definitions/")
       raise "Cannot resolve base type of #{type}"
     end
   end
