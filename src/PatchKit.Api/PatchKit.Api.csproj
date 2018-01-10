@@ -11,6 +11,11 @@
     <AssemblyName>PatchKit.Api</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/patchkit-net/patchkit-api-dotnet/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/patchkit-net/patchkit-api-dotnet</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/patchkit-net/patchkit-api-dotnet/releases</PackageReleaseNotes>
+    <PackageTags>patchkit api upsoft</PackageTags>
+    <BeforePack>_RetrieveAssemblyVersion</BeforePack>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -56,30 +61,64 @@
     <Compile Include="Models\*\*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="11.1.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.5.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="PatchKit.Logging" Version="1.*" />
     <PackageReference Include="PatchKit.Network" Version="1.*" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <UsingTask TaskName="GetAssemblyPackageData" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <AssemblyPath ParameterType="System.String" Required="true" />
+      <PackageVersion ParameterType="System.String" Output="true" />
+      <Authors ParameterType="System.String" Output="true" />
+      <Description ParameterType="System.String" Output="true" />
+      <Copyright ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System" />
+      <Reference Include="System.Reflection" />
+      <Using Namespace="System.Reflection" />
+      <Using Namespace="System.Diagnostics" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+var assembly = Assembly.LoadFrom(AssemblyPath);
+var versionInfo = FileVersionInfo.GetVersionInfo(AssemblyPath);
+
+string version = versionInfo.ProductVersion;
+
+if(string.IsNullOrEmpty(version))
+{
+  version = assembly.GetName().Version.ToString();
+}
+
+PackageVersion = version;
+Authors = versionInfo.CompanyName;
+Description = versionInfo.FileDescription;
+Copyright = versionInfo.LegalCopyright;
+]]></Code>
+    </Task>
+  </UsingTask>
+  <Target Name="_RetrieveAssemblyVersion" DependsOnTargets="Build">
+    <GetAssemblyPackageData AssemblyPath="$(OutputPath)/$(AssemblyName).dll">
+      <Output PropertyName="PackageVersion" TaskParameter="PackageVersion" />
+      <Output PropertyName="Authors" TaskParameter="Authors" />
+      <Output PropertyName="Description" TaskParameter="Description" />
+      <Output PropertyName="Copyright" TaskParameter="Copyright" />
+    </GetAssemblyPackageData>
+  </Target>
   <Target Name="RegenerateApi">
     <Exec Command="ruby Generator/generate.rb" />
   </Target>
-  <Target Name="ClearPackages">
-    <ItemGroup>
-      <Packages Include="*.nupkg" />
-    </ItemGroup>
-    <Delete Files="@(Packages)" />
+  <Target Name="LocalPublishPackage" DependsOnTargets="Pack" Condition=" '$(Configuration)' == 'Debug' ">
+    <Exec Command="nuget add $(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg -Source ~/.nuget_local" />
   </Target>
-  <Target Name="LocalPublishPackage" DependsOnTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
-    <CallTarget Targets="ClearPackages" />
-    <Exec Command="nuget pack PatchKit.Api.csproj -MsbuildPath $(MSBuildToolsPath) -Prop Configuration=Debug" />
-    <Exec Command="nuget init . ~/.nuget_local" />
-  </Target>
-  <Target Name="PublishPackage" DependsOnTargets="Build" Condition=" '$(Configuration)' == 'Release' ">
-    <CallTarget Targets="ClearPackages" />
-    <Exec Command="nuget pack PatchKit.Api.csproj -MsbuildPath $(MSBuildToolsPath) -Prop Configuration=Release" />
-    <Exec Command="nuget push *.nupkg -Source https://api.nuget.org/v3/index.json" />
+  <Target Name="PublishPackage" DependsOnTargets="Pack" Condition=" '$(Configuration)' == 'Release' ">
+    <Exec Command="nuget push $(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg -Source https://api.nuget.org/v3/index.json" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
          Other similar extension points exist, see Microsoft.Common.targets.

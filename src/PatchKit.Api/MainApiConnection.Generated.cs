@@ -18,6 +18,18 @@ namespace PatchKit.Api
             return ParseResponse<App>(response);
         }
         
+        /// <summary>
+        /// Gets a complete changelog of an application.
+        /// </summary>
+        /// <param name="appSecret">Secret of an application.</param>
+        public Changelog[] GetAppChangelog(string appSecret)
+        {
+            string path = "/1/apps/{app_secret}/changelog";
+            path = path.Replace("{app_secret}", appSecret.ToString());
+            string query = string.Empty;
+            var response = GetResponse(path, query);
+            return ParseResponse<Changelog[]>(response);
+        }
         
         /// <summary>
         /// Gets the basic information for all published versions. When API Key is provided, draft version information is included if draft version exists.
@@ -52,9 +64,10 @@ namespace PatchKit.Api
         }
         
         /// <summary>
-        /// Gets latest application version id.
+        /// Gets latest application version id. Please use /apps/{app_secret} instead to get the latest version.
         /// </summary>
         /// <param name="appSecret">Secret of an application.</param>
+        [System.Obsolete]
         public AppVersionId GetAppLatestAppVersionId(string appSecret)
         {
             string path = "/1/apps/{app_secret}/versions/latest/id";
@@ -198,6 +211,7 @@ namespace PatchKit.Api
             var response = GetResponse(path, query);
             return ParseResponse<ResourceUrl[]>(response);
         }
+        
         
         
         
