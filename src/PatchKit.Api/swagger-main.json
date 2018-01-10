@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.9.0",
+    "version": "171202",
     "title": "PatchKit API",
     "contact": {
       "name": "API Support",
@@ -11,7 +11,7 @@
   },
   "externalDocs": {
     "description": "Changelog",
-    "url": "https://stackedit.io/viewer#!url=http://api-docs.internal.patchkit.net:9090/db/web-CHANGELOG.md"
+    "url": "https://stackedit.io/viewer#!url=https://s3.eu-central-1.amazonaws.com/api-docs.internal.patchkit.net/c1a3000f26749f914834ac32987a0f2c/web-CHANGELOG.md"
   },
   "host": "api.patchkit.net",
   "basePath": "/1",
@@ -76,23 +76,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "type": "object",
-                "properties": {
-                  "version_id": {
-                    "type": "integer",
-                    "format": "int32",
-                    "description": "Version id.",
-                    "minimum": 1
-                  },
-                  "version_label": {
-                    "type": "string",
-                    "description": "Human readable label."
-                  },
-                  "changes": {
-                    "type": "string",
-                    "description": "Changes description."
-                  }
-                }
+                "$ref": "#/definitions/Changelog"
               }
             }
           },
@@ -219,8 +203,9 @@
     },
     "/apps/{app_secret}/versions/latest/id": {
       "get": {
+        "deprecated": true,
         "summary": "Gets app latest app version id",
-        "description": "Gets latest application version id.",
+        "description": "Gets latest application version id. Please use /apps/{app_secret} instead to get the latest version.",
         "tags": [
           "Version"
         ],
@@ -1545,6 +1530,36 @@
           }
         }
       }
+    },
+    "/stats/report": {
+      "post": {
+        "summary": "Reports a statistic event.",
+        "description": "Reports a statistic event for data analytics. Events are often divided to starting and finishing events.",
+        "tags": [
+          "Stats"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/StatsReport"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1561,6 +1576,68 @@
           "enum": [
             "INVALID_KEY_SECRET"
           ]
+        }
+      }
+    },
+    "StatsReport": {
+      "type": "object",
+      "properties": {
+        "event_name": {
+          "type": "string",
+          "enum": [
+            "patcher_started",
+            "patcher_canceled",
+            "game_started",
+            "game_closed",
+            "download_started",
+            "download_canceled",
+            "download_failed",
+            "download_finished",
+            "version_download_started",
+            "version_download_canceled",
+            "version_download_failed",
+            "version_download_finished",
+            "validation_started",
+            "validation_finished",
+            "key_verification_started",
+            "key_verification_failed",
+            "key_verification_finished"
+          ]
+        },
+        "app_secret": {
+          "type": "string",
+          "description": "Secret of game application if applicable.",
+          "example": "2895ff707d6142bc2c840364e0deb569"
+        },
+        "app_version": {
+          "type": "integer",
+          "description": "Version of game application if applicable.",
+          "example": 7
+        },
+        "sender_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Unique client id. Should remain the same for all applications launched on this machine + account. Used to identify the player.",
+          "example": 1099511627776
+        },
+        "caller": {
+          "type": "string",
+          "description": "Caller id the same as for caller GET parameters. More information: http://redmine.patchkit.net/projects/patchkit-documentation/wiki/Web_API_General_Info",
+          "example": "patcher_2.5.1"
+        },
+        "operating_system_family": {
+          "type": "string",
+          "enum": [
+            "windows",
+            "mac",
+            "linux"
+          ]
+        },
+        "operating_system_version": {
+          "type": "string",
+          "description": "Operating system version without family name, for instance '10.11' for OSX.",
+          "maxLength": 255,
+          "example": "8.1 x64"
         }
       }
     },
@@ -1597,10 +1674,6 @@
           "type": "string",
           "description": "Application author."
         },
-        "patcher_secret": {
-          "type": "string",
-          "description": "The secret of patcher to use."
-        },
         "use_keys": {
           "type": "boolean",
           "description": "If set to true, application needs to contact keys server to get valid key_secret for content download."
@@ -1611,6 +1684,74 @@
             "all",
             "http_only"
           ]
+        },
+        "current_version": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0,
+          "description": "Current number of publicly available version (does not count drafts). If 0, no version has been yet published."
+        },
+        "lowest_version_with_diff": {
+          "type": "integer",
+          "format": "integer",
+          "minimum": 0,
+          "description": "The number of lowest version that has a diff file available. For instance if player has version 3 and lowest_version_with_diff=4 then the player can upgrade from version 3 to 4 using diff file. But when lowest_version_with_diff=5 then it's not possible to apply a diff file and player has to re-download the game instead."
+        },
+        "patcher_banner_image": {
+          "type": "string",
+          "description": "An https url to image banner that should be displayed inside the patcher. Watch out for patcher_banner_image_dimensions, but for now the size will be fixed at 600x230. If this field is set to null, a default (stored) image should be used. The image will be always in PNG format."
+        },
+        "patcher_banner_image_dimensions": {
+          "type": "#/definitions/PatcherBannerImageDimensions"
+        },
+        "patcher_download_speed_unit": {
+          "type": "string",
+          "enum": [
+            "human_readable",
+            "kilobytes",
+            "megabytes"
+          ],
+          "description": "Tells the patcher what format should be used to display download speed unit. human_readable should display kilobytes unless download speed exceeds 1024 kilobytes/s, then megabytes should be displayed."
+        },
+        "patcher_whitelabel": {
+          "type": "boolean",
+          "description": "If set to true, no PatchKit logo or PatchKit reference should be visible on the patcher."
+        },
+        "patcher_secret": {
+          "type": "string",
+          "description": "The secret of patcher to use."
+        }
+      }
+    },
+    "Changelog": {
+      "type": "object",
+      "properties": {
+        "version_id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Version id.",
+          "minimum": 1
+        },
+        "version_label": {
+          "type": "string",
+          "description": "Human readable label."
+        },
+        "changes": {
+          "type": "string",
+          "description": "Changes description."
+        }
+      }
+    },
+    "PatcherBannerImageDimensions": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "y": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
