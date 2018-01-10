@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using Newtonsoft.Json;
 using PatchKit.Logging;
 using PatchKit.Network;
@@ -128,7 +129,7 @@ namespace PatchKit.Api
                     Timeout = RequestTimeoutCalculator.Timeout
                 };
 
-                Logger.LogTrace($"Setting request timeout to {httpRequest.Timeout}ms");
+                Logger.LogTrace($"timeout = {httpRequest.Timeout}ms");
 
                 var httpResponse = HttpClient.Get(httpRequest);
 
@@ -139,8 +140,6 @@ namespace PatchKit.Api
                 {
                     Logger.LogDebug("Response is valid.");
                     response = new ApiResponse(httpResponse);
-                    RequestRetryStrategy.OnRequestSuccess();
-                    RequestTimeoutCalculator.OnRequestSuccess();
                     return true;
                 }
 
@@ -160,19 +159,13 @@ namespace PatchKit.Api
             }
             catch (WebException webException)
             {
-                RequestTimeoutCalculator.OnRequestFailure();
-                RequestRetryStrategy.OnRequestFailure();
-                
-                Logger.LogWarning("Unable to get any response from server.", webException);
+                Logger.LogWarning("Error while connecting to the API server.", webException);
                 exceptionsList.Add(webException);
                 return false;
             }
             catch (ApiServerConnectionException e)
             {
-                RequestTimeoutCalculator.OnRequestFailure();
-                RequestRetryStrategy.OnRequestFailure();
-                
-                Logger.LogWarning("Unable to get valid response from server.", e);
+                Logger.LogWarning("Error while connecting to the API server.", e);
                 exceptionsList.Add(e);
                 return false;
             }
@@ -243,6 +236,8 @@ namespace PatchKit.Api
 
                 IApiResponse apiResponse;
 
+                bool retry;
+
                 do
                 {
                     if (!TryGetResponse(_connectionSettings.MainServer, request, ServerType.MainServer,
@@ -259,15 +254,41 @@ namespace PatchKit.Api
                             }
                         }
                     }
-                } while (apiResponse == null && RequestRetryStrategy.ShouldRetry);
 
-                if (apiResponse == null)
-                {
-                    throw new ApiConnectionException(request.MainServerExceptions, request.CacheServersExceptions);
-                }
+                    if (apiResponse == null)
+                    {
+                        Logger.LogWarning(
+                            "Connection attempt to every server has failed. Checking whether retry is possible...");
+                        RequestTimeoutCalculator.OnRequestFailure();
+                        RequestRetryStrategy.OnRequestFailure();
+
+                        retry = RequestRetryStrategy.ShouldRetry;
+
+                        if (!retry)
+                        {
+                            Logger.LogError("Retry is not possible.");
+                            throw new ApiConnectionException(request.MainServerExceptions,
+                                request.CacheServersExceptions);
+                        }
+
+                        Logger.LogDebug(
+                            $"Retry is possible. Waiting {RequestRetryStrategy.DelayBeforeNextTry}ms before next attempt...");
+
+                        Thread.Sleep(RequestRetryStrategy.DelayBeforeNextTry);
+
+                        Logger.LogDebug("Trying to get response from servers once again...");
+                    }
+                    else
+                    {
+                        retry = false;
+                    }
+                } while (retry);
 
                 Logger.LogDebug("Successfully got response.");
                 Logger.LogTrace($"Response body: {apiResponse.Body}");
+
+                RequestTimeoutCalculator.OnRequestSuccess();
+                RequestRetryStrategy.OnRequestSuccess();
 
                 return apiResponse;
             }
