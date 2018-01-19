@@ -143,16 +143,12 @@ namespace PatchKit.Api
                     return true;
                 }
 
-                Logger.LogWarning("Response is not valid. Checking whether it is API error...");
+                Logger.LogWarning("Response is not valid.");
 
                 if (IsResponseUnexpectedError(httpResponse, serverType))
                 {
-                    Logger.LogError("API error. Unable to get valid response.");
                     throw new ApiResponseException((int) httpResponse.StatusCode);
                 }
-
-                Logger.LogDebug(
-                    "Error is not related to API. Probably it was caused by connection problems.");
 
                 throw new ApiServerConnectionException(
                     $"Server \'{server.Host}\' returned code {(int) httpResponse.StatusCode}");
@@ -302,7 +298,7 @@ namespace PatchKit.Api
         private enum ServerType
         {
             MainServer,
-            CacheServer,
+            CacheServer
         }
     }
 }
