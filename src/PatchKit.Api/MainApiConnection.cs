@@ -14,30 +14,16 @@
             {
                 MainServer = new ApiConnectionServer
                 {
-                    Host = "api.patchkit.net",
-                    UseHttps = false,
-                    Port = 0
+                    Host = "api2.patchkit.net",
+                    UseHttps = true
                 },
                 CacheServers =
                     new[]
                     {
                         new ApiConnectionServer
                         {
-                            Host = "api-cache-1.patchkit.net",
-                            Port = 43230,
-                            UseHttps = false
-                        },
-                        new ApiConnectionServer
-                        {
-                            Host = "api-cache-2.patchkit.net",
-                            Port = 43230,
-                            UseHttps = false
-                        },
-                        new ApiConnectionServer
-                        {
-                            Host = "api-cache-3.patchkit.net",
-                            Port = 43230,
-                            UseHttps = false
+                            Host = "api-cache.patchkit.net",
+                            UseHttps = true
                         }
                     }
             };

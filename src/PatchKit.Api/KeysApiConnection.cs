@@ -14,9 +14,8 @@
             {
                 MainServer = new ApiConnectionServer
                 {
-                    Host = "keys.patchkit.net",
-                    Port = 43240,
-                    UseHttps = false
+                    Host = "keys2.patchkit.net",
+                    UseHttps = true
                 },
                 CacheServers = null
             };
