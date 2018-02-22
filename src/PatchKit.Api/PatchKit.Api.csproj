@@ -11,11 +11,7 @@
     <AssemblyName>PatchKit.Api</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/patchkit-net/patchkit-api-dotnet/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/patchkit-net/patchkit-api-dotnet</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/patchkit-net/patchkit-api-dotnet/releases</PackageReleaseNotes>
-    <PackageTags>patchkit api upsoft</PackageTags>
-    <BeforePack>_RetrieveAssemblyVersion</BeforePack>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -37,6 +33,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="JetBrains.Annotations, Version=11.1.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325">
+      <HintPath>..\packages\JetBrains.Annotations.11.1.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net35\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PatchKit.Logging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>../packages/PatchKit.Logging.1.1.1/lib/net35/PatchKit.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="PatchKit.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>../packages/PatchKit.Network.1.0.1/lib/net35/PatchKit.Network.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -55,76 +63,22 @@
     <Compile Include="IApiResponse.cs" />
     <Compile Include="MainApiConnection.Generated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\VersionInfo.cs" />
+    <Compile Include="Properties\Version.cs" />
     <Compile Include="ApiResponseException.cs" />
     <Compile Include="Utilities\UnixTimeConvert.cs" />
     <Compile Include="Models\*\*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="11.1.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.5.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="PatchKit.Logging" Version="1.*" />
-    <PackageReference Include="PatchKit.Network" Version="1.*" />
+    <None Include="..\..\CHANGELOG.md">
+      <Link>CHANGELOG.md</Link>
+    </None>
+    <None Include="..\..\LICENSE">
+      <Link>LICENSE</Link>
+    </None>
+    <None Include="..\..\README.md">
+      <Link>README.md</Link>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <UsingTask TaskName="GetAssemblyPackageData" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
-    <ParameterGroup>
-      <AssemblyPath ParameterType="System.String" Required="true" />
-      <PackageVersion ParameterType="System.String" Output="true" />
-      <Authors ParameterType="System.String" Output="true" />
-      <Description ParameterType="System.String" Output="true" />
-      <Copyright ParameterType="System.String" Output="true" />
-    </ParameterGroup>
-    <Task>
-      <Reference Include="System" />
-      <Reference Include="System.Reflection" />
-      <Using Namespace="System.Reflection" />
-      <Using Namespace="System.Diagnostics" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-var assembly = Assembly.LoadFrom(AssemblyPath);
-var versionInfo = FileVersionInfo.GetVersionInfo(AssemblyPath);
-
-string version = versionInfo.ProductVersion;
-
-if(string.IsNullOrEmpty(version))
-{
-  version = assembly.GetName().Version.ToString();
-}
-
-PackageVersion = version;
-Authors = versionInfo.CompanyName;
-Description = versionInfo.FileDescription;
-Copyright = versionInfo.LegalCopyright;
-]]></Code>
-    </Task>
-  </UsingTask>
-  <Target Name="_RetrieveAssemblyVersion" DependsOnTargets="Build">
-    <GetAssemblyPackageData AssemblyPath="$(OutputPath)/$(AssemblyName).dll">
-      <Output PropertyName="PackageVersion" TaskParameter="PackageVersion" />
-      <Output PropertyName="Authors" TaskParameter="Authors" />
-      <Output PropertyName="Description" TaskParameter="Description" />
-      <Output PropertyName="Copyright" TaskParameter="Copyright" />
-    </GetAssemblyPackageData>
-  </Target>
-  <Target Name="RegenerateApi">
-    <Exec Command="ruby Generator/generate.rb" />
-  </Target>
-  <Target Name="LocalPublishPackage" DependsOnTargets="Pack" Condition=" '$(Configuration)' == 'Debug' ">
-    <Exec Command="nuget add $(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg -Source ~/.nuget_local" />
-  </Target>
-  <Target Name="PublishPackage" DependsOnTargets="Pack" Condition=" '$(Configuration)' == 'Release' ">
-    <Exec Command="nuget push $(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg -Source https://api.nuget.org/v3/index.json" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-         Other similar extension points exist, see Microsoft.Common.targets.
-    <Target Name="BeforeBuild">
-    </Target>
-    <Target Name="AfterBuild">
-    </Target>
-    -->
 </Project>
