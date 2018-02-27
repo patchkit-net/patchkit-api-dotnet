@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "171202",
+    "version": "180220",
     "title": "PatchKit API",
     "contact": {
       "name": "API Support",
@@ -1703,6 +1703,11 @@
         },
         "patcher_banner_image_dimensions": {
           "type": "#/definitions/PatcherBannerImageDimensions"
+        },
+        "patcher_banner_image_updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date and time when patcher banner image has been updated."
         },
         "patcher_download_speed_unit": {
           "type": "string",
