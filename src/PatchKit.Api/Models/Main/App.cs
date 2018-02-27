@@ -59,6 +59,12 @@ namespace PatchKit.Api.Models.Main
         public PatcherBannerImageDimensions PatcherBannerImageDimensions;
         
         /// <summary>
+        /// Date and time when patcher banner image has been updated.
+        /// </summary>
+        [JsonProperty("patcher_banner_image_updated_at")]
+        public string PatcherBannerImageUpdatedAt;
+        
+        /// <summary>
         /// Tells the patcher what format should be used to display download speed unit. human_readable should display kilobytes unless download speed exceeds 1024 kilobytes/s, then megabytes should be displayed.
         /// </summary>
         [JsonProperty("patcher_download_speed_unit")]
