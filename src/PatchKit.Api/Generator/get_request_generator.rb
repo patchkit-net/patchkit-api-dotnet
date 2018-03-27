@@ -61,7 +61,7 @@ class GetRequestGenerator < BaseGenerator
     write_method_parameters_processing request
     write "string query = string.Join(\"&\", queryList.ToArray());" if use_query
     write "string query = string.Empty;" unless use_query
-    write "var response = GetResponse(path, query);"
+    write "var response = Get(path, query);"
     write "return ParseResponse<#{resolve_type(response["schema"])}>(response);"
   end
 

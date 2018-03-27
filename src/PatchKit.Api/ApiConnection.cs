@@ -19,6 +19,10 @@ namespace PatchKit.Api
 
             public string Query;
 
+            public string Method;
+
+            public string Data;
+
             public List<Exception> MainServerExceptions;
 
             public List<Exception> CacheServersExceptions;
@@ -123,15 +127,7 @@ namespace PatchKit.Api
                     Port = server.RealPort
                 }.Uri;
 
-                var httpRequest = new HttpGetRequest
-                {
-                    Address = uri,
-                    Timeout = RequestTimeoutCalculator.Timeout
-                };
-
-                Logger.LogTrace($"timeout = {httpRequest.Timeout}ms");
-
-                var httpResponse = HttpClient.Get(httpRequest);
+                var httpResponse = MakeResponse(uri, request);
 
                 Logger.LogDebug("Received response. Checking whether it is valid...");
                 Logger.LogTrace($"Response status code: {httpResponse.StatusCode}");
@@ -164,6 +160,39 @@ namespace PatchKit.Api
                 Logger.LogWarning("Error while connecting to the API server.", e);
                 exceptionsList.Add(e);
                 return false;
+            }
+        }
+
+        private IHttpResponse MakeResponse(Uri uri, Request request)
+        {
+            if (string.IsNullOrEmpty(request.Method) || request.Method == "GET")
+            {
+                var httpRequest = new HttpGetRequest
+                {
+                    Address = uri,
+                    Timeout = RequestTimeoutCalculator.Timeout
+                };
+
+                Logger.LogTrace($"timeout = {httpRequest.Timeout}ms");
+
+                return HttpClient.Get(httpRequest);
+            }
+            else if (request.Method == "POST")
+            {
+                var httpRequest = new HttpPostRequest
+                {
+                    Address = uri,
+                    Timeout = RequestTimeoutCalculator.Timeout,
+                    FormData = request.Data
+                };
+
+                Logger.LogTrace($"timeout = {httpRequest.Timeout}ms");
+
+                return HttpClient.Post(httpRequest);
+            }
+            else
+            {
+                throw new ArgumentException("Unrecognized request method.");
             }
         }
 
@@ -209,6 +238,38 @@ namespace PatchKit.Api
             return value >= min && value <= max;
         }
 
+        public IApiResponse Get(string path, string query)
+        {
+            return CreateResponse(() => {
+                Logger.LogDebug($"Getting response for GET request with path: '{path}' and query: '{query}'...");
+
+                return new Request
+                {
+                    Path = path,
+                    Query = query,
+                    MainServerExceptions = new List<Exception>(),
+                    CacheServersExceptions = new List<Exception>()
+                };
+            });
+        }
+
+        public IApiResponse Post(string path, string query, string data)
+        {
+            return CreateResponse(() => {
+                Logger.LogDebug($"Getting response for POST request with path: '{path}', query: '{query}' and data '{data}'...");
+
+                return new Request
+                {
+                    Path = path,
+                    Query = query,
+                    Method = "POST",
+                    Data = data,
+                    MainServerExceptions = new List<Exception>(),
+                    CacheServersExceptions = new List<Exception>()
+                };
+            });
+        }
+
         /// <summary>
         /// Retrieves specified resource from API.
         /// </summary>
@@ -216,20 +277,12 @@ namespace PatchKit.Api
         /// <param name="query">The query of the resource.</param>
         /// <returns>Response with resource result.</returns>
         /// <exception cref="ApiConnectionException">Could not connect to API.</exception>
-        public IApiResponse GetResponse(string path, string query)
+        private IApiResponse CreateResponse(Func<Request> requestBuilder)
         {
             try
             {
-                Logger.LogDebug($"Getting response for path: '{path}' and query: '{query}'...");
-
-                var request = new Request
-                {
-                    Path = path,
-                    Query = query,
-                    MainServerExceptions = new List<Exception>(),
-                    CacheServersExceptions = new List<Exception>()
-                };
-
+                var request = requestBuilder();
+                
                 IApiResponse apiResponse;
 
                 bool retry;

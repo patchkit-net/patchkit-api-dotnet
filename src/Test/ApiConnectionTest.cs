@@ -48,7 +48,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "http://main_server/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.Get("/path", "query");
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -64,7 +64,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "https://main_server/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.Get("/path", "query");
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -80,7 +80,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "http://main_server:81/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.Get("/path", "query");
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -101,7 +101,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "http://cache_server_1/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.Get("/path", "query");
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -122,7 +122,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "http://cache_server_1/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.Get("/path", "query");
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -141,7 +141,7 @@ namespace PatchKit.Api
 
             Assert.Throws(
                 Is.TypeOf<ApiResponseException>(),
-                () => apiConnection.GetResponse("/path", "query")
+                () => apiConnection.Get("/path", "query")
             );
         }
 
@@ -160,7 +160,7 @@ namespace PatchKit.Api
 
             var exception = (ApiConnectionException) Assert.Throws(
                 Is.TypeOf<ApiConnectionException>(),
-                () => apiConnection.GetResponse("/path", "query")
+                () => apiConnection.Get("/path", "query")
             );
             Assert.IsTrue(exception.MainServerExceptions.Any());
             Assert.IsTrue(exception.CacheServersExceptions.Any());
@@ -184,7 +184,7 @@ namespace PatchKit.Api
 
             var exception = (ApiConnectionException) Assert.Throws(
                 Is.TypeOf<ApiConnectionException>(),
-                () => apiConnection.GetResponse("/path", "query")
+                () => apiConnection.Get("/path", "query")
             );
             Assert.IsTrue(exception.MainServerExceptions.All(e => e.Message == "main-server"));
             Assert.IsTrue(exception.CacheServersExceptions.Any(e => e.Message == "cache-server-1"));
@@ -207,7 +207,7 @@ namespace PatchKit.Api
 
             var exception = (ApiConnectionException) Assert.Throws(
                 Is.TypeOf<ApiConnectionException>(),
-                () => apiConnection.GetResponse("/path", "query")
+                () => apiConnection.Get("/path", "query")
             );
             Assert.IsTrue(exception.MainServerExceptions.All(e => e.Message == "main-server"));
             Assert.IsTrue(exception.CacheServersExceptions.All(e =>
@@ -235,7 +235,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "http://cache_server_2/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.Get("/path", "query");
             Assert.AreEqual("test", apiResponse.Body);
         }
 
