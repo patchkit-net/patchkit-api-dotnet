@@ -5,6 +5,17 @@ namespace PatchKit.Api
 {
     public partial class MainApiConnection
     {
+        /// <param name="apiKey">Application owner API key.</param>
+        public App[] ListsUserApplications(string apiKey)
+        {
+            string path = "/1/apps";
+            List<string> queryList = new List<string>();
+            queryList.Add("api_key="+apiKey);
+            string query = string.Join("&", queryList.ToArray());
+            var response = Get(path, query);
+            return ParseResponse<App[]>(response);
+        }
+        
         /// <summary>
         /// Gets detailes app info
         /// </summary>
@@ -14,7 +25,7 @@ namespace PatchKit.Api
             string path = "/1/apps/{app_secret}";
             path = path.Replace("{app_secret}", appSecret.ToString());
             string query = string.Empty;
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<App>(response);
         }
         
@@ -27,7 +38,7 @@ namespace PatchKit.Api
             string path = "/1/apps/{app_secret}/changelog";
             path = path.Replace("{app_secret}", appSecret.ToString());
             string query = string.Empty;
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<Changelog[]>(response);
         }
         
@@ -46,7 +57,7 @@ namespace PatchKit.Api
                 queryList.Add("api_key="+apiKey);
             }
             string query = string.Join("&", queryList.ToArray());
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<AppVersion[]>(response);
         }
         
@@ -59,7 +70,7 @@ namespace PatchKit.Api
             string path = "/1/apps/{app_secret}/versions/latest";
             path = path.Replace("{app_secret}", appSecret.ToString());
             string query = string.Empty;
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<AppVersion>(response);
         }
         
@@ -73,7 +84,7 @@ namespace PatchKit.Api
             string path = "/1/apps/{app_secret}/versions/latest/id";
             path = path.Replace("{app_secret}", appSecret.ToString());
             string query = string.Empty;
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<AppVersionId>(response);
         }
         
@@ -94,7 +105,7 @@ namespace PatchKit.Api
                 queryList.Add("api_key="+apiKey);
             }
             string query = string.Join("&", queryList.ToArray());
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<AppVersion>(response);
         }
         
@@ -109,7 +120,7 @@ namespace PatchKit.Api
             path = path.Replace("{app_secret}", appSecret.ToString());
             path = path.Replace("{version_id}", versionId.ToString());
             string query = string.Empty;
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<AppContentSummary>(response);
         }
         
@@ -124,7 +135,7 @@ namespace PatchKit.Api
             path = path.Replace("{app_secret}", appSecret.ToString());
             path = path.Replace("{version_id}", versionId.ToString());
             string query = string.Empty;
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<AppDiffSummary>(response);
         }
         
@@ -145,7 +156,7 @@ namespace PatchKit.Api
                 queryList.Add("key_secret="+keySecret);
             }
             string query = string.Join("&", queryList.ToArray());
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<AppContentTorrentUrl>(response);
         }
         
@@ -166,7 +177,7 @@ namespace PatchKit.Api
                 queryList.Add("key_secret="+keySecret);
             }
             string query = string.Join("&", queryList.ToArray());
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<AppDiffTorrentUrl>(response);
         }
         
@@ -187,7 +198,7 @@ namespace PatchKit.Api
                 queryList.Add("country="+country);
             }
             string query = string.Join("&", queryList.ToArray());
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<ResourceUrl[]>(response);
         }
         
@@ -208,7 +219,7 @@ namespace PatchKit.Api
                 queryList.Add("country="+country);
             }
             string query = string.Join("&", queryList.ToArray());
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<ResourceUrl[]>(response);
         }
         
@@ -227,6 +238,17 @@ namespace PatchKit.Api
         
         
         
+        
+        /// <param name="apiKey">Application owner API key. Required when not using a session.</param>
+        public Plan GetPlanInfo(string apiKey)
+        {
+            string path = "/1/me/plan";
+            List<string> queryList = new List<string>();
+            queryList.Add("api_key="+apiKey);
+            string query = string.Join("&", queryList.ToArray());
+            var response = Get(path, query);
+            return ParseResponse<Plan>(response);
+        }
         
         
         

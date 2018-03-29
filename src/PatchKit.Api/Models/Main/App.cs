@@ -11,6 +11,18 @@ namespace PatchKit.Api.Models.Main
         public int Id;
         
         /// <summary>
+        /// Application secret
+        /// </summary>
+        [JsonProperty("secret")]
+        public string Secret;
+        
+        /// <summary>
+        /// Application platfrom
+        /// </summary>
+        [JsonProperty("platform")]
+        public string Platform;
+        
+        /// <summary>
         /// Application name
         /// </summary>
         [JsonProperty("name")]

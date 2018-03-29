@@ -42,8 +42,11 @@
     <Reference Include="nunit.framework, Version=3.9.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
       <HintPath>..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="PatchKit.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\PatchKit.Network.1.0.1\lib\net35\PatchKit.Network.dll</HintPath>
+    <Reference Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " Include="PatchKit.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\PatchKit.Api\bin\Release\PatchKit.Network.dll</HintPath>
+    </Reference>
+    <Reference Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' " Include="PatchKit.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\PatchKit.Api\bin\Debug\PatchKit.Network.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

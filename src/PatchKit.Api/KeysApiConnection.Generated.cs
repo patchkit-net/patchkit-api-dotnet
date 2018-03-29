@@ -12,7 +12,7 @@ namespace PatchKit.Api
             string path = "/v2/jobs/{guid}";
             path = path.Replace("{guid}", guid.ToString());
             string query = string.Empty;
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<Job>(response);
         }
         
@@ -36,7 +36,7 @@ namespace PatchKit.Api
                 queryList.Add("key_secret="+keySecret);
             }
             string query = string.Join("&", queryList.ToArray());
-            var response = GetResponse(path, query);
+            var response = Get(path, query);
             return ParseResponse<LicenseKey>(response);
         }
         

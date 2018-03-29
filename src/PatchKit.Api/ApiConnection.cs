@@ -13,11 +13,21 @@ namespace PatchKit.Api
     /// </summary>
     public class ApiConnection
     {
+        private enum RequestMethod
+        {
+            Get,
+            Post
+        }
+
         private struct Request
         {
             public string Path;
 
             public string Query;
+
+            public RequestMethod Method;
+
+            public string Body;
 
             public List<Exception> MainServerExceptions;
 
@@ -90,7 +100,7 @@ namespace PatchKit.Api
             return JsonConvert.DeserializeObject<T>(response.Body, _jsonSerializerSettings);
         }
 
-        private bool TryGetResponse(ApiConnectionServer server, Request request, ServerType serverType,
+        private bool TrySendRequest(ApiConnectionServer server, Request request, ServerType serverType,
             out IApiResponse response)
         {
             Logger.LogDebug(
@@ -123,15 +133,7 @@ namespace PatchKit.Api
                     Port = server.RealPort
                 }.Uri;
 
-                var httpRequest = new HttpGetRequest
-                {
-                    Address = uri,
-                    Timeout = RequestTimeoutCalculator.Timeout
-                };
-
-                Logger.LogTrace($"timeout = {httpRequest.Timeout}ms");
-
-                var httpResponse = HttpClient.Get(httpRequest);
+                var httpResponse = MakeResponse(uri, request);
 
                 Logger.LogDebug("Received response. Checking whether it is valid...");
                 Logger.LogTrace($"Response status code: {httpResponse.StatusCode}");
@@ -164,6 +166,40 @@ namespace PatchKit.Api
                 Logger.LogWarning("Error while connecting to the API server.", e);
                 exceptionsList.Add(e);
                 return false;
+            }
+        }
+
+        private IHttpResponse MakeResponse(Uri uri, Request request)
+        {
+            switch (request.Method)
+            {
+                case RequestMethod.Get:
+                {
+                    var httpRequest = new HttpGetRequest
+                    {
+                        Address = uri,
+                        Timeout = RequestTimeoutCalculator.Timeout
+                    };
+
+                    Logger.LogTrace($"timeout = {httpRequest.Timeout}ms");
+
+                    return HttpClient.Get(httpRequest);
+                }
+                case RequestMethod.Post:
+                {
+                    var httpRequest = new HttpPostRequest
+                    {
+                        Address = uri,
+                        Timeout = RequestTimeoutCalculator.Timeout,
+                        Body = request.Body
+                    };
+
+                    Logger.LogTrace($"timeout = {httpRequest.Timeout}ms");
+
+                    return HttpClient.Post(httpRequest);
+                }
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -209,41 +245,59 @@ namespace PatchKit.Api
             return value >= min && value <= max;
         }
 
-        /// <summary>
-        /// Retrieves specified resource from API.
-        /// </summary>
-        /// <param name="path">The path to the resource.</param>
-        /// <param name="query">The query of the resource.</param>
-        /// <returns>Response with resource result.</returns>
-        /// <exception cref="ApiConnectionException">Could not connect to API.</exception>
-        public IApiResponse GetResponse(string path, string query)
+        public IApiResponse Get(string path, string query)
         {
-            try
-            {
-                Logger.LogDebug($"Getting response for path: '{path}' and query: '{query}'...");
+            return SendRequest(() => {
+                Logger.LogDebug($"Getting response for GET request with path: '{path}' and query: '{query}'...");
 
-                var request = new Request
+                return new Request
                 {
                     Path = path,
                     Query = query,
                     MainServerExceptions = new List<Exception>(),
                     CacheServersExceptions = new List<Exception>()
                 };
+            });
+        }
 
+        public IApiResponse Post(string path, string query, string body)
+        {
+            return SendRequest(() => {
+                Logger.LogDebug($"Getting response for POST request with path: '{path}', query: '{query}' and data '{body}'...");
+
+                return new Request
+                {
+                    Path = path,
+                    Query = query,
+                    Method = RequestMethod.Post,
+                    Body = body,
+                    MainServerExceptions = new List<Exception>(),
+                    CacheServersExceptions = new List<Exception>()
+                };
+            });
+        }
+
+        private IApiResponse SendRequest(Func<Request> requestBuilder)
+        {
+            try
+            {
+                var request = requestBuilder();
+                
                 IApiResponse apiResponse;
 
                 bool retry;
 
                 do
                 {
-                    if (!TryGetResponse(_connectionSettings.MainServer, request, ServerType.MainServer,
+                    if (!TrySendRequest(_connectionSettings.MainServer, request, ServerType.MainServer,
                         out apiResponse))
                     {
-                        if (_connectionSettings.CacheServers != null)
+                        if (_connectionSettings.CacheServers != null &&
+                            request.Method == RequestMethod.Get)
                         {
                             foreach (var cacheServer in _connectionSettings.CacheServers)
                             {
-                                if (TryGetResponse(cacheServer, request, ServerType.CacheServer, out apiResponse))
+                                if (TrySendRequest(cacheServer, request, ServerType.CacheServer, out apiResponse))
                                 {
                                     break;
                                 }

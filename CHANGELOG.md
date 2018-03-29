@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.0]
+### Added
+- Support for POST calls
+
+### Changed
+- API update to ver. 180329
+
 ## [1.2.2]
 ### Changed
 - Update API to ver. 180220
