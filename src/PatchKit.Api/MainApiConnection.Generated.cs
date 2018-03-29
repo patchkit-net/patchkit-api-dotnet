@@ -29,6 +29,18 @@ namespace PatchKit.Api
             return ParseResponse<App>(response);
         }
         
+        /// <summary>
+        /// Gets a complete changelog of an application.
+        /// </summary>
+        /// <param name="appSecret">Secret of an application.</param>
+        public Changelog[] GetAppChangelog(string appSecret)
+        {
+            string path = "/1/apps/{app_secret}/changelog";
+            path = path.Replace("{app_secret}", appSecret.ToString());
+            string query = string.Empty;
+            var response = Get(path, query);
+            return ParseResponse<Changelog[]>(response);
+        }
         
         /// <summary>
         /// Gets the basic information for all published versions. When API Key is provided, draft version information is included if draft version exists.
@@ -226,6 +238,17 @@ namespace PatchKit.Api
         
         
         
+        
+        /// <param name="apiKey">Application owner API key. Required when not using a session.</param>
+        public Plan GetPlanInfo(string apiKey)
+        {
+            string path = "/1/me/plan";
+            List<string> queryList = new List<string>();
+            queryList.Add("api_key="+apiKey);
+            string query = string.Join("&", queryList.ToArray());
+            var response = Get(path, query);
+            return ParseResponse<Plan>(response);
+        }
         
         
         

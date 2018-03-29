@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "180313",
+    "version": "180329",
     "title": "PatchKit API",
     "contact": {
       "name": "API Support",
@@ -20,7 +20,8 @@
       "get": {
         "summary": "Lists user applications",
         "tags": [
-          "App"
+          "App",
+          "Public"
         ],
         "parameters": [
           {
@@ -46,7 +47,8 @@
       "post": {
         "summary": "Creates application",
         "tags": [
-          "App"
+          "App",
+          "Public"
         ],
         "consumes": [
           "multipart/form-data"
@@ -113,7 +115,8 @@
         "summary": "Get application info",
         "description": "Gets detailes app info",
         "tags": [
-          "App"
+          "App",
+          "Public"
         ],
         "parameters": [
           {
@@ -160,7 +163,8 @@
           }
         ],
         "tags": [
-          "App"
+          "App",
+          "Public"
         ],
         "responses": {
           "200": {
@@ -168,23 +172,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "type": "object",
-                "properties": {
-                  "version_id": {
-                    "type": "integer",
-                    "format": "int32",
-                    "description": "Version id.",
-                    "minimum": 1
-                  },
-                  "version_label": {
-                    "type": "string",
-                    "description": "Human readable label."
-                  },
-                  "changes": {
-                    "type": "string",
-                    "description": "Changes description."
-                  }
-                }
+                "$ref": "#/definitions/Changelog"
               }
             }
           },
@@ -215,8 +203,8 @@
           }
         ],
         "tags": [
-          "App",
-          "Version"
+          "Version",
+          "Public"
         ],
         "responses": {
           "200": {
@@ -267,8 +255,8 @@
           }
         ],
         "tags": [
-          "App",
-          "Version"
+          "Version",
+          "Public"
         ],
         "responses": {
           "201": {
@@ -299,6 +287,10 @@
             "type": "string"
           }
         ],
+        "tags": [
+          "Version",
+          "Public"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -314,9 +306,6 @@
         "deprecated": true,
         "summary": "Gets app latest app version id",
         "description": "Gets latest application version id. Please use /apps/{app_secret} instead to get the latest version.",
-        "tags": [
-          "Version"
-        ],
         "parameters": [
           {
             "name": "app_secret",
@@ -325,6 +314,10 @@
             "required": true,
             "type": "string"
           }
+        ],
+        "tags": [
+          "Version",
+          "Public"
         ],
         "responses": {
           "200": {
@@ -341,7 +334,8 @@
         "summary": "Gets app version",
         "description": "Gets selected version object. If API key is provided, can get the information about draft version.",
         "tags": [
-          "Version"
+          "Version",
+          "Public"
         ],
         "parameters": [
           {
@@ -386,7 +380,8 @@
         "summary": "Updates app version",
         "description": "Updates selected version properties. You can update any number of properties, because you're not required to pass all of them. Omited properties will remain unchanged.",
         "tags": [
-          "Version"
+          "Version",
+          "Public"
         ],
         "consumes": [
           "multipart/form-data"
@@ -473,6 +468,9 @@
             "format": "int32"
           }
         ],
+        "tags": [
+          "Version"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -506,6 +504,9 @@
             "type": "integer",
             "format": "int32"
           }
+        ],
+        "tags": [
+          "Version"
         ],
         "responses": {
           "200": {
@@ -547,6 +548,9 @@
             "required": false,
             "description": "Key secret provided by key server. This value is optional and is needed only if application is secured by license keys."
           }
+        ],
+        "tags": [
+          "Version"
         ],
         "responses": {
           "200": {
@@ -595,6 +599,9 @@
             "description": "Key secret provided by key server. This value is optional and is needed only if application is secured by license keys."
           }
         ],
+        "tags": [
+          "Version"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -642,6 +649,9 @@
             "type": "string"
           }
         ],
+        "tags": [
+          "Version"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -685,6 +695,9 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "tags": [
+          "Version"
         ],
         "responses": {
           "200": {
@@ -762,9 +775,87 @@
           }
         },
         "tags": [
-          "App",
           "Version"
         ]
+      }
+    },
+    "/apps/{app_secret}/versions/{version_id}/import": {
+      "post": {
+        "summary": "Imports other's app version",
+        "description": "Allows to use another application content as this version's content without the need of uploading it again.",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Application owner API key."
+          },
+          {
+            "name": "app_secret",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "source_app_secret",
+            "description": "App Secret that you'd like to merge",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "source_vid",
+            "description": "Source version ID that you'd like to merge",
+            "in": "formData",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "copy_label",
+            "description": "If set to true, it will copy the value of source version label",
+            "in": "formData",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "copy_changelog",
+            "description": "If set to true, it will copy the value of source version changelog",
+            "in": "formData",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version queued to be merged",
+            "schema": {
+              "$ref": "#/definitions/Job"
+            }
+          },
+          "401": {
+            "description": "Invalid API Key"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Application or version not found"
+          }
+        }
       }
     },
     "/apps/{app_secret}/versions/{version_id}/diff_file": {
@@ -834,13 +925,12 @@
           }
         },
         "tags": [
-          "App",
           "Version"
         ]
       }
     },
     "/apps/{app_secret}/versions/{version_id}/publish": {
-      "put": {
+      "post": {
         "summary": "Publishes version",
         "description": "Publishes selected version. Given version should be a draft version.",
         "parameters": [
@@ -873,85 +963,9 @@
           }
         },
         "tags": [
-          "App",
-          "Version"
+          "Version",
+          "Public"
         ]
-      }
-    },
-    "/apps/{app_secret}/logs": {
-      "post": {
-        "summary": "Uploads new log",
-        "description": "Uploads a new log from application.",
-        "consumes": [
-          "multipart/form-data"
-        ],
-        "tags": [
-          "App",
-          "Logs"
-        ],
-        "parameters": [
-          {
-            "name": "app_secret",
-            "type": "string",
-            "in": "path",
-            "required": true
-          },
-          {
-            "name": "kind",
-            "description": "Log class. Used to determine origin and intent.",
-            "type": "integer",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "name": "version",
-            "description": "Version of the application that produced this log.",
-            "type": "string",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "name": "file_guid",
-            "type": "string",
-            "description": "Unique file GUID of this log. Using the same guid will replace the previous log file.",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "name": "content",
-            "type": "file",
-            "description": "Log content as a file.",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "name": "compression",
-            "type": "string",
-            "description": "Compression method used for the log file.",
-            "in": "formData",
-            "required": true,
-            "enum": [
-              "gzip"
-            ]
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "422": {
-            "description": "Invalid request",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
       }
     },
     "/keys/mark_distributed": {
@@ -1493,6 +1507,34 @@
         }
       }
     },
+    "/me/plan": {
+      "get": {
+        "summary": "Gets plan info",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Application owner API key. Required when not using a session."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Plan"
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      }
+    },
     "/me/subscriptions/{subscription_id}/subscribe": {
       "post": {
         "summary": "Subscribes to e-mail subscription",
@@ -1771,21 +1813,21 @@
           "description": "Initial app id."
         },
         "secret": {
-            "type": "string",
-            "description": "Application secret"
+          "type": "string",
+          "description": "Application secret"
         },
         "platform": {
-            "type": "string",
-            "enum": [
-              "windows_x86",
-              "windows_x86_64",
-              "mac_x86",
-              "mac_x86_64",
-              "linux_x86",
-              "linux_x86_64",
-              "other"
-            ],
-            "description": "Application platform"
+          "type": "string",
+          "description": "Application platfrom",
+          "enum": [
+            "windows_x86",
+            "windows_x86_64",
+            "mac_x86",
+            "mac_x86_64",
+            "linux_x86",
+            "linux_x86_64",
+            "other"
+          ]
         },
         "name": {
           "type": "string",
@@ -1827,7 +1869,7 @@
           "description": "An https url to image banner that should be displayed inside the patcher. Watch out for patcher_banner_image_dimensions, but for now the size will be fixed at 600x230. If this field is set to null, a default (stored) image should be used. The image will be always in PNG format."
         },
         "patcher_banner_image_dimensions": {
-          "type": "#/definitions/PatcherBannerImageDimensions"
+          "$ref": "#/definitions/PatcherBannerImageDimensions"
         },
         "patcher_banner_image_updated_at": {
           "type": "string",
@@ -1850,6 +1892,19 @@
         "patcher_secret": {
           "type": "string",
           "description": "The secret of patcher to use."
+        }
+      }
+    },
+    "PatcherBannerImageDimensions": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "y": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -1935,6 +1990,10 @@
         "processing_finished_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "can_be_imported": {
+          "type": "boolean",
+          "description": "If true then this version can be imported to other application. Visible only for owners."
         }
       }
     },
@@ -2072,6 +2131,25 @@
         }
       }
     },
+    "Changelog": {
+      "type": "object",
+      "properties": {
+        "version_id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Version id.",
+          "minimum": 1
+        },
+        "version_label": {
+          "type": "string",
+          "description": "Human readable label."
+        },
+        "changes": {
+          "type": "string",
+          "description": "Changes description."
+        }
+      }
+    },
     "Chunks": {
       "type": "object",
       "properties": {
@@ -2151,6 +2229,17 @@
             ]
           },
           "secret": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Plan": {
+      "type": "object",
+      "properties": {
+        "capabilities": {
+          "type": "array",
+          "items": {
             "type": "string"
           }
         }

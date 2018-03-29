@@ -100,5 +100,11 @@ namespace PatchKit.Api.Models.Main
         [JsonProperty("processing_finished_at")]
         public string ProcessingFinishedAt;
         
+        /// <summary>
+        /// If true then this version can be imported to other application. Visible only for owners.
+        /// </summary>
+        [JsonProperty("can_be_imported")]
+        public bool CanBeImported;
+        
     }
 }

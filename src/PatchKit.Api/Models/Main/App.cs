@@ -17,7 +17,7 @@ namespace PatchKit.Api.Models.Main
         public string Secret;
         
         /// <summary>
-        /// Application platform
+        /// Application platfrom
         /// </summary>
         [JsonProperty("platform")]
         public string Platform;
