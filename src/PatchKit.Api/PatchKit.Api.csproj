@@ -39,10 +39,10 @@
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
       <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="PatchKit.Logging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Condition="!Exists('..\..\..\patchkit-logging-dotnet\src\PatchKit.Logging\PatchKit.Logging.csproj')" Include="PatchKit.Logging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>../packages/PatchKit.Logging.1.1.1/lib/net35/PatchKit.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="PatchKit.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Condition="!Exists('..\..\..\patchkit-network-dotnet\src\PatchKit.Network\PatchKit.Network.csproj')" Include="PatchKit.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\PatchKit.Network.1.1.0\lib\net35\PatchKit.Network.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -82,6 +82,16 @@
     <None Include="packages.config" />
     <None Include="swagger-keys.json" />
     <None Include="swagger-main.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Condition="Exists('..\..\..\patchkit-logging-dotnet\src\PatchKit.Logging\PatchKit.Logging.csproj')" Include="..\..\..\patchkit-logging-dotnet\src\PatchKit.Logging\PatchKit.Logging.csproj">
+      <Project>{c2197d71-3149-4a2f-9d3f-f0134790894d}</Project>
+      <Name>PatchKit.Logging</Name>
+    </ProjectReference>
+    <ProjectReference Condition="Exists('..\..\..\patchkit-network-dotnet\src\PatchKit.Network\PatchKit.Network.csproj')" Include="..\..\..\patchkit-network-dotnet\src\PatchKit.Network\PatchKit.Network.csproj">
+      <Project>{ee5fbfa6-cf9a-4393-b052-0757457fdfdb}</Project>
+      <Name>PatchKit.Network</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
