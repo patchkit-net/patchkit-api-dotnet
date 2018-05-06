@@ -1,39 +1,35 @@
-﻿namespace PatchKit.Api
+﻿using JetBrains.Annotations;
+using PatchKit.Logging;
+using PatchKit.Network;
+
+namespace PatchKit.Api
 {
     /// <summary>
     /// PatchKit Keys Api Connection.
     /// </summary>
-    public sealed partial class KeysApiConnection : ApiConnection
+    public sealed partial class KeysApiConnection : IKeysApiConnection
     {
-        /// <summary>
-        /// Returns default settings.
-        /// </summary>
-        public static ApiConnectionSettings GetDefaultSettings()
+        private readonly IBaseApiConnection _baseApiConnection;
+
+        public KeysApiConnection(ApiConnectionSettings settings,
+            [NotNull] IBaseApiConnectionFactory baseApiConnectionFactory)
         {
-            return new ApiConnectionSettings
+            _baseApiConnection = baseApiConnectionFactory.Create(settings);
+        }
+
+        private static void SetPathParam(ref string path, string name, string value)
+        {
+            path = path.Replace($"{{{name}}}", value);
+        }
+
+        private static void SetQueryParam(ref string query, string name, string value)
+        {
+            if (query != string.Empty)
             {
-                MainServer = new ApiConnectionServer
-                {
-                    Host = "keys2.patchkit.net",
-                    UseHttps = true
-                },
-                CacheServers = null
-            };
-        }
+                query += "&";
+            }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="KeysApiConnection"/> class.
-        /// </summary>
-        /// <param name="connectionSettings">The connection settings.</param>
-        public KeysApiConnection(ApiConnectionSettings connectionSettings) : base(connectionSettings)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="KeysApiConnection"/> class.
-        /// </summary>
-        public KeysApiConnection() : this(GetDefaultSettings())
-        {
+            query += $"{name}={value}";
         }
     }
 }

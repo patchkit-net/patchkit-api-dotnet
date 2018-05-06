@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using PatchKit.Core.Collections.Immutable;
 
 namespace PatchKit.Api
 {
@@ -10,22 +11,22 @@ namespace PatchKit.Api
     public class ApiConnectionException : Exception
     {
         /// <inheritdoc />
-        public ApiConnectionException(IEnumerable<Exception> mainServerExceptions,
-            IEnumerable<Exception> cacheServersExceptions) : base("Unable to connect to any of the API servers.")
+        public ApiConnectionException(Exception mainServerException,
+            ImmutableArray<Exception> cacheServersExceptions) : base("Unable to connect to any of the API servers.")
         {
-            MainServerExceptions = mainServerExceptions;
+            MainServerException = mainServerException;
             CacheServersExceptions = cacheServersExceptions;
         }
 
         /// <summary>
-        /// Exceptions that occured during attempts to connect to main server.
+        /// Exception that occured during attempt to connect to the main server.
         /// </summary>
-        public IEnumerable<Exception> MainServerExceptions { get; }
+        public Exception MainServerException { get; }
 
         /// <summary>
-        /// Exceptions that occured during attempts to connect to cache servers.
+        /// Exceptions that occured during attempts to connect to the cache servers.
         /// </summary>
-        public IEnumerable<Exception> CacheServersExceptions { get; }
+        public ImmutableArray<Exception> CacheServersExceptions { get; }
 
         /// <inheritdoc />
         public override string Message
@@ -36,7 +37,7 @@ namespace PatchKit.Api
 
                 t += "\n" +
                      "Main server exceptions:\n" +
-                     ExceptionsToString(MainServerExceptions) +
+                     MainServerException +
                      "Cache servers exceptions:\n" +
                      ExceptionsToString(CacheServersExceptions);
 
