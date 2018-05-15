@@ -11,14 +11,14 @@ namespace PatchKit.Api
         /// </summary>
         /// <param name="apiKey">Application owner API key. (required)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        ImmutableArray<App> (string apiKey, Timeout? timeout);
+        ImmutableArray<App> ListUserApplications(string apiKey, Timeout? timeout);
         
         /// <summary>
         /// Gets detailes app info
         /// </summary>
         /// <param name="appSecret">Secret of an application. (required)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        App (string appSecret, Timeout? timeout);
+        App GetApplicationInfo(string appSecret, Timeout? timeout);
         
         /// <summary>
         /// Gets a complete changelog of an application.

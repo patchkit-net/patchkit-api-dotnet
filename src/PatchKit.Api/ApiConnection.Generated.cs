@@ -9,7 +9,7 @@ namespace PatchKit.Api
 {
     public partial class ApiConnection
     {
-        public ImmutableArray<App> (string apiKey, Timeout? timeout)
+        public ImmutableArray<App> ListUserApplications(string apiKey, Timeout? timeout)
         {
             if (apiKey == null)
             {
@@ -23,7 +23,7 @@ namespace PatchKit.Api
             return JsonConvert.DeserializeObject<ImmutableArray<App>>(response.Body, new ImmutableArrayJsonConverter<App>());
         }
         
-        public App (string appSecret, Timeout? timeout)
+        public App GetApplicationInfo(string appSecret, Timeout? timeout)
         {
             if (appSecret == null)
             {
