@@ -51,7 +51,9 @@ private
   def method_definition
     params = parameters.map {|p| p.param} + ["Timeout? timeout"]
 
-    name = upper_camel_case(@name).gsub!(/Gets/, "Get")
+    name = upper_camel_case(@name)
+        .gsub(/Gets/, "Get")
+        .gsub(/Lists/, "List")
 
     "#{@type.fullname} #{name}(#{params.join(', ')})"
   end
