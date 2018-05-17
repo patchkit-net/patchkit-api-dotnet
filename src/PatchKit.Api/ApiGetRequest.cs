@@ -23,6 +23,11 @@ namespace PatchKit.Api
                     return "Path cannot be null.";
                 }
 
+                if (Path.StartsWith("/"))
+                {
+                    return "Path cannot start with slash.";
+                }
+
                 if (Query == null)
                 {
                     return "Query cannot be null.";

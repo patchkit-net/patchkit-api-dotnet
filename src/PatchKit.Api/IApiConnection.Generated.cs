@@ -1,6 +1,7 @@
 using PatchKit.Api.Models;
 using PatchKit.Core.Collections.Immutable;
 using PatchKit.Core;
+using PatchKit.Core.Cancellation;
 
 namespace PatchKit.Api
 {
@@ -11,21 +12,21 @@ namespace PatchKit.Api
         /// </summary>
         /// <param name="apiKey">Application owner API key. (required)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        ImmutableArray<App> ListUserApplications(string apiKey, Timeout? timeout);
+        ImmutableArray<App> ListUserApplications(string apiKey, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets detailes app info
         /// </summary>
         /// <param name="appSecret">Secret of an application. (required)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        App GetApplicationInfo(string appSecret, Timeout? timeout);
+        App GetApplicationInfo(string appSecret, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets a complete changelog of an application.
         /// </summary>
         /// <param name="appSecret">Secret of an application. (required)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        ImmutableArray<Changelog> GetAppChangelog(string appSecret, Timeout? timeout);
+        ImmutableArray<Changelog> GetAppChangelog(string appSecret, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the basic information for all published versions. When API Key is provided, draft version information is included if draft version exists.
@@ -33,21 +34,21 @@ namespace PatchKit.Api
         /// <param name="appSecret">Secret of an application. (required)</param>
         /// <param name="apiKey">Application owner API key. (optional)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        ImmutableArray<AppVersion> GetAppVersionList(string appSecret, string apiKey, Timeout? timeout);
+        ImmutableArray<AppVersion> GetAppVersionList(string appSecret, string apiKey, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets latest application version object.
         /// </summary>
         /// <param name="appSecret">Secret of an application. (required)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        AppVersion GetAppLatestAppVersion(string appSecret, Timeout? timeout);
+        AppVersion GetAppLatestAppVersion(string appSecret, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets latest application version id. Please use /apps/{app_secret} instead to get the latest version.
         /// </summary>
         /// <param name="appSecret">Secret of an application. (required)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        AppVersionId GetAppLatestAppVersionId(string appSecret, Timeout? timeout);
+        AppVersionId GetAppLatestAppVersionId(string appSecret, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets selected version object. If API key is provided, can get the information about draft version.
@@ -56,7 +57,7 @@ namespace PatchKit.Api
         /// <param name="versionId">Version id. (required)</param>
         /// <param name="apiKey">Application owner API key. (optional)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        AppVersion GetAppVersion(string appSecret, int versionId, string apiKey, Timeout? timeout);
+        AppVersion GetAppVersion(string appSecret, int versionId, string apiKey, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets selected version content summary.
@@ -64,7 +65,7 @@ namespace PatchKit.Api
         /// <param name="appSecret">Secret of an application. (required)</param>
         /// <param name="versionId">Version id. (required)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        AppContentSummary GetAppVersionContentSummary(string appSecret, int versionId, Timeout? timeout);
+        AppContentSummary GetAppVersionContentSummary(string appSecret, int versionId, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets selected version diff summary.
@@ -72,7 +73,7 @@ namespace PatchKit.Api
         /// <param name="appSecret">Secret of an application. (required)</param>
         /// <param name="versionId">Version id. (required)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        AppDiffSummary GetAppVersionDiffSummary(string appSecret, int versionId, Timeout? timeout);
+        AppDiffSummary GetAppVersionDiffSummary(string appSecret, int versionId, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets selected application version content torrent url.
@@ -81,7 +82,7 @@ namespace PatchKit.Api
         /// <param name="versionId">Version id. (required)</param>
         /// <param name="keySecret">Key secret provided by key server. This value is optional and is needed only if application is secured by license keys. (optional)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        AppContentTorrentUrl GetAppVersionContentTorrentUrl(string appSecret, int versionId, string keySecret, Timeout? timeout);
+        AppContentTorrentUrl GetAppVersionContentTorrentUrl(string appSecret, int versionId, string keySecret, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets selected application version diff torrent url.
@@ -90,7 +91,7 @@ namespace PatchKit.Api
         /// <param name="versionId">Version id. (required)</param>
         /// <param name="keySecret">Key secret provided by key server. This value is optional and is needed only if application is secured by license keys. (optional)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        AppDiffTorrentUrl GetAppVersionDiffTorrentUrl(string appSecret, int versionId, string keySecret, Timeout? timeout);
+        AppDiffTorrentUrl GetAppVersionDiffTorrentUrl(string appSecret, int versionId, string keySecret, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets selected application version content urls.
@@ -99,7 +100,7 @@ namespace PatchKit.Api
         /// <param name="versionId">Version id. (required)</param>
         /// <param name="country">Country iso code (optional)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        ImmutableArray<ResourceUrl> GetAppVersionContentUrls(string appSecret, int versionId, string country, Timeout? timeout);
+        ImmutableArray<ResourceUrl> GetAppVersionContentUrls(string appSecret, int versionId, string country, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets selected application version diff urls.
@@ -108,13 +109,13 @@ namespace PatchKit.Api
         /// <param name="versionId">Version id. (required)</param>
         /// <param name="country">Country iso code (optional)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        ImmutableArray<ResourceUrl> GetAppVersionDiffUrls(string appSecret, int versionId, string country, Timeout? timeout);
+        ImmutableArray<ResourceUrl> GetAppVersionDiffUrls(string appSecret, int versionId, string country, Timeout? timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// 
         /// </summary>
         /// <param name="apiKey">Application owner API key. Required when not using a session. (required)</param>
         /// <param name="timeout">Request timeout. If <c>null</c> then timeout is disabled</param>
-        Plan GetPlanInfo(string apiKey, Timeout? timeout);
+        Plan GetPlanInfo(string apiKey, Timeout? timeout, CancellationToken cancellationToken);
     }
 }

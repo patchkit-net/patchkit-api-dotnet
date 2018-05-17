@@ -6,6 +6,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using PatchKit.Api;
+using PatchKit.Core.Cancellation;
 using PatchKit.Core.Collections.Immutable;
 using PatchKit.Logging;
 using PatchKit.Network;
@@ -42,14 +43,13 @@ namespace Test
 
             var protocol = mainServerHttps ? "https" : "http";
 
-            var request = new HttpGetRequest(
-                new Uri($"{protocol}://main_server:{mainServerPort}/path?query"), null);
+            var request = new HttpGetRequest(new Uri($"{protocol}://main_server:{mainServerPort}/path?query"));
 
-            _httpClient.SendRequest(request, null).Returns(new HttpResponse("test", HttpStatusCode.OK));
+            _httpClient.SendRequest(request, null, CancellationToken.Empty).Returns(new HttpResponse("test", HttpStatusCode.OK));
 
-            apiConnection.SendRequest(new ApiGetRequest("/path", "query"), null);
+            apiConnection.SendRequest(new ApiGetRequest("path", "query"), null, CancellationToken.Empty);
 
-            _httpClient.Received(1).SendRequest(request, null);
+            _httpClient.Received(1).SendRequest(request, null, CancellationToken.Empty);
         }
 
         [Theory]
@@ -64,10 +64,12 @@ namespace Test
             var apiConnection = new BaseApiConnection(settings, _httpClient, _apiCache, _logger);
 
             _httpClient
-                .SendRequest(new HttpGetRequest(new Uri("http://main_server/path?query"), null), null)
+                .SendRequest(new HttpGetRequest(new Uri("http://main_server/path?query")), null,
+                    CancellationToken.Empty)
                 .Returns(new HttpResponse("test", code));
 
-            var apiResponse = apiConnection.SendRequest(new ApiGetRequest("/path", "query"), null);
+            var apiResponse =
+                apiConnection.SendRequest(new ApiGetRequest("path", "query"), null, CancellationToken.Empty);
             apiResponse.Body.Should().Be("test");
         }
 
@@ -88,14 +90,17 @@ namespace Test
             var apiConnection = new BaseApiConnection(settings, _httpClient, _apiCache, _logger);
 
             _httpClient
-                .SendRequest(new HttpGetRequest(new Uri("http://main_server:80/path?query"), null), null)
+                .SendRequest(new HttpGetRequest(new Uri("http://main_server:80/path?query")), null,
+                    CancellationToken.Empty)
                 .Returns(new HttpResponse("error", errorCode));
 
             _httpClient
-                .SendRequest(new HttpGetRequest(new Uri("http://cache_server_1:88/path?query"), null), null)
+                .SendRequest(new HttpGetRequest(new Uri("http://cache_server_1:88/path?query")), null,
+                    CancellationToken.Empty)
                 .Returns(new HttpResponse("success", HttpStatusCode.OK));
 
-            var apiResponse = apiConnection.SendRequest(new ApiGetRequest("/path", "query"), null);
+            var apiResponse =
+                apiConnection.SendRequest(new ApiGetRequest("path", "query"), null, CancellationToken.Empty);
             apiResponse.Body.Should().Be("success");
         }
 
@@ -115,10 +120,12 @@ namespace Test
             var apiConnection = new BaseApiConnection(settings, _httpClient, _apiCache, _logger);
 
             _httpClient
-                .SendRequest(new HttpGetRequest(new Uri("http://main_server:80/path?query"), null), null)
+                .SendRequest(new HttpGetRequest(new Uri("http://main_server:80/path?query")), null,
+                    CancellationToken.Empty)
                 .Returns(new HttpResponse("error", errorCode));
 
-            Action act = () => apiConnection.SendRequest(new ApiGetRequest("/path", "query"), null);
+            Action act = () =>
+                apiConnection.SendRequest(new ApiGetRequest("path", "query"), null, CancellationToken.Empty);
 
             act.Should().Throw<ApiResponseException>();
         }
@@ -137,18 +144,22 @@ namespace Test
             var apiConnection = new BaseApiConnection(settings, _httpClient, _apiCache, _logger);
 
             _httpClient
-                .SendRequest(new HttpGetRequest(new Uri("http://main_server:80/path?query"), null), null)
+                .SendRequest(new HttpGetRequest(new Uri("http://main_server:80/path?query")), null,
+                    CancellationToken.Empty)
                 .Throws(new WebException());
 
             _httpClient
-                .SendRequest(new HttpGetRequest(new Uri("http://cache_server_1:40/path?query"), null), null)
+                .SendRequest(new HttpGetRequest(new Uri("http://cache_server_1:40/path?query")), null,
+                    CancellationToken.Empty)
                 .Returns(new HttpResponse("failure", HttpStatusCode.BadRequest));
 
             _httpClient
-                .SendRequest(new HttpGetRequest(new Uri("http://cache_server_2:88/path?query"), null), null)
+                .SendRequest(new HttpGetRequest(new Uri("http://cache_server_2:88/path?query")), null,
+                    CancellationToken.Empty)
                 .Returns(new HttpResponse("failure", HttpStatusCode.NotFound));
 
-            Action act = () => apiConnection.SendRequest(new ApiGetRequest("/path", "query"), null);
+            Action act = () =>
+                apiConnection.SendRequest(new ApiGetRequest("path", "query"), null, CancellationToken.Empty);
 
             act.Should().Throw<ApiConnectionException>();
         }
@@ -167,18 +178,22 @@ namespace Test
             var apiConnection = new BaseApiConnection(settings, _httpClient, _apiCache, _logger);
 
             _httpClient
-                .SendRequest(new HttpGetRequest(new Uri("http://main_server:80/path?query"), null), null)
+                .SendRequest(new HttpGetRequest(new Uri("http://main_server:80/path?query")), null,
+                    CancellationToken.Empty)
                 .Throws(new WebException());
 
             _httpClient
-                .SendRequest(new HttpGetRequest(new Uri("http://cache_server_1:40/path?query"), null), null)
+                .SendRequest(new HttpGetRequest(new Uri("http://cache_server_1:40/path?query")), null,
+                    CancellationToken.Empty)
                 .Returns(new HttpResponse("failure", HttpStatusCode.BadRequest));
 
             _httpClient
-                .SendRequest(new HttpGetRequest(new Uri("http://cache_server_2:88/path?query"), null), null)
+                .SendRequest(new HttpGetRequest(new Uri("http://cache_server_2:88/path?query")), null,
+                    CancellationToken.Empty)
                 .Returns(new HttpResponse("success", HttpStatusCode.OK));
 
-            var apiResponse = apiConnection.SendRequest(new ApiGetRequest("/path", "query"), null);
+            var apiResponse =
+                apiConnection.SendRequest(new ApiGetRequest("path", "query"), null, CancellationToken.Empty);
             apiResponse.Body.Should().Be("success");
         }
 
@@ -191,14 +206,14 @@ namespace Test
 
             var apiConnection = new BaseApiConnection(settings, _httpClient, _apiCache, _logger);
 
-            var httpRequest = new HttpGetRequest(
-                new Uri("http://main_server:80/path?query"), null);
+            var httpRequest = new HttpGetRequest(new Uri("http://main_server:80/path?query"));
 
-            _httpClient.SendRequest(httpRequest, null).Returns(new HttpResponse("test", HttpStatusCode.OK));
+            _httpClient.SendRequest(httpRequest, null, CancellationToken.Empty)
+                .Returns(new HttpResponse("test", HttpStatusCode.OK));
 
-            var apiRequest = new ApiGetRequest("/path", "query");
+            var apiRequest = new ApiGetRequest("path", "query");
 
-            apiConnection.SendRequest(apiRequest, null);
+            apiConnection.SendRequest(apiRequest, null, CancellationToken.Empty);
 
             _apiCache.Received(1).Save(apiRequest, new ApiResponse("test"));
         }
@@ -213,10 +228,10 @@ namespace Test
             var apiConnection = new BaseApiConnection(settings, _httpClient, _apiCache, _logger);
 
             var apiResponse = new ApiResponse("cached-response");
-            var apiRequest = new ApiGetRequest("/path", "query");
+            var apiRequest = new ApiGetRequest("path", "query");
             _apiCache.Retrieve(apiRequest).Returns(apiResponse);
 
-            apiConnection.SendRequest(apiRequest, null).Should().Be(apiResponse);
+            apiConnection.SendRequest(apiRequest, null, CancellationToken.Empty).Should().Be(apiResponse);
         }
 
         [Theory]
@@ -239,12 +254,13 @@ namespace Test
                 new Uri($"{protocol}://main_server:{mainServerPort}/path?query"), content, contentType);
 
             _httpClient
-                .SendRequest(request, null)
+                .SendRequest(request, null, CancellationToken.Empty)
                 .Returns(new HttpResponse("test", HttpStatusCode.OK));
 
-            apiConnection.SendRequest(new ApiPostRequest("/path", "query", content, contentType), null);
+            apiConnection.SendRequest(new ApiPostRequest("path", "query", content, contentType), null,
+                CancellationToken.Empty);
 
-            _httpClient.Received(1).SendRequest(request, null);
+            _httpClient.Received(1).SendRequest(request, null, CancellationToken.Empty);
         }
 
         [Theory]
@@ -266,11 +282,12 @@ namespace Test
                 content, contentType);
 
             _httpClient
-                .SendRequest(request, null)
+                .SendRequest(request, null, CancellationToken.Empty)
                 .Returns(new HttpResponse("test", code));
 
             var apiResponse =
-                apiConnection.SendRequest(new ApiPostRequest("/path", "query", content, contentType), null);
+                apiConnection.SendRequest(new ApiPostRequest("path", "query", content, contentType), null,
+                    CancellationToken.Empty);
             apiResponse.Body.Should().Be("test");
         }
 
@@ -306,20 +323,21 @@ namespace Test
                 content, contentType);
 
             _httpClient
-                .SendRequest(mainRequest, null)
+                .SendRequest(mainRequest, null, CancellationToken.Empty)
                 .Returns(new HttpResponse("error", errorCode));
 
             _httpClient
-                .SendRequest(cache1Request, null)
+                .SendRequest(cache1Request, null, CancellationToken.Empty)
                 .Returns(new HttpResponse("success", HttpStatusCode.OK));
 
 
             _httpClient
-                .SendRequest(cache2Request, null)
+                .SendRequest(cache2Request, null, CancellationToken.Empty)
                 .Returns(new HttpResponse("success", HttpStatusCode.OK));
 
             Action act = () =>
-                apiConnection.SendRequest(new ApiPostRequest("/path", "query", content, contentType), null);
+                apiConnection.SendRequest(new ApiPostRequest("path", "query", content, contentType), null,
+                    CancellationToken.Empty);
 
             act.Should().Throw<Exception>();
         }

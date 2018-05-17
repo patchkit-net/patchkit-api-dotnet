@@ -26,12 +26,12 @@ class ApiRequest
         cw.write v unless v.nil?
       end
       cw.write "timeout?.ThrowArgumentExceptionIfNotValid(nameof(timeout));"
-      cw.write "string path = \"#{@path}\";"
+      cw.write "string path = \"#{@path.gsub(/^\/*/, '')}\";"
       cw.write "string query = string.Empty;"
       @parameters.each do |p|
         cw.write p.param_setter
       end
-      cw.write "var response = _baseApiConnection.SendRequest(new ApiGetRequest(path, query), timeout);"
+      cw.write "var response = _baseApiConnection.SendRequest(new ApiGetRequest(path, query), timeout, cancellationToken);"
       cw.write method_response_deserialization
     end
     cw.text
@@ -49,7 +49,7 @@ private
   end
 
   def method_definition
-    params = parameters.map {|p| p.param} + ["Timeout? timeout"]
+    params = parameters.map {|p| p.param} + ["Timeout? timeout", "CancellationToken cancellationToken"]
 
     name = upper_camel_case(@name)
         .gsub(/Gets/, "Get")

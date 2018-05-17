@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using JetBrains.Annotations;
 using PatchKit.Core;
+using PatchKit.Core.Cancellation;
 using PatchKit.Core.Collections.Immutable;
 using PatchKit.Logging;
 using PatchKit.Network;
@@ -35,7 +36,7 @@ namespace PatchKit.Api
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public ApiResponse SendRequest(ApiGetRequest request, Timeout? timeout)
+        public ApiResponse SendRequest(ApiGetRequest request, Timeout? timeout, CancellationToken cancellationToken)
         {
             request.ThrowArgumentExceptionIfNotValid(nameof(request));
             timeout?.ThrowArgumentExceptionIfNotValid(nameof(timeout));
@@ -50,9 +51,12 @@ namespace PatchKit.Api
                 return cachedResponse.Value;
             }
 
-            HttpResponse SendRequestToServer(ApiConnectionServer server) =>
-                _httpClient.SendRequest(new HttpGetRequest(PrepareAddress(server, request.Path, request.Query), null),
-                    timeout);
+            HttpResponse SendRequestToServer(ApiConnectionServer server)
+            {
+                var uri = PrepareAddress(server, request.Path, request.Query);
+                return _httpClient.SendRequest(new HttpGetRequest(uri),
+                    timeout, cancellationToken);
+            }
 
             var response = SendRequest(SendRequestToServer, true);
 
@@ -61,7 +65,7 @@ namespace PatchKit.Api
             return response;
         }
 
-        public ApiResponse SendRequest(ApiPostRequest request, Timeout? timeout)
+        public ApiResponse SendRequest(ApiPostRequest request, Timeout? timeout, CancellationToken cancellationToken)
         {
             request.ThrowArgumentExceptionIfNotValid(nameof(request));
             timeout?.ThrowArgumentExceptionIfNotValid(nameof(timeout));
@@ -71,7 +75,7 @@ namespace PatchKit.Api
 
             HttpResponse SendRequestToServer(ApiConnectionServer server) => _httpClient.SendRequest(
                 new HttpPostRequest(PrepareAddress(server, request.Path, request.Query), request.Content,
-                    request.ContentType), timeout);
+                    request.ContentType), timeout, cancellationToken);
 
             return SendRequest(SendRequestToServer, false);
         }
@@ -191,16 +195,16 @@ namespace PatchKit.Api
             }
         }
 
-        private static Uri PrepareAddress(ApiConnectionServer server, string path, string query)
+        private static HttpAddress PrepareAddress(ApiConnectionServer server, string path, string query)
         {
-            return new UriBuilder
+            return new HttpAddress(new UriBuilder
             {
-                Scheme = server.UseHttps ? "https" : "http",
                 Host = server.Host,
                 Path = path,
                 Query = query,
-                Port = server.Port
-            }.Uri;
+                Port = server.Port,
+                Scheme = server.UseHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp
+            }.Uri);
         }
 
         private static bool IsStatusCodeOk(HttpStatusCode statusCode)

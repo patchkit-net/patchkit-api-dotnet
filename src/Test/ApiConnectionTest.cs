@@ -2,6 +2,7 @@
 using NSubstitute;
 using NUnit.Framework;
 using PatchKit.Api;
+using PatchKit.Core.Cancellation;
 
 namespace Test
 {
@@ -33,10 +34,12 @@ namespace Test
             var query = country == null ? string.Empty : $"country={country}";
 
             _baseApiConnection
-                .SendRequest(new ApiGetRequest("/1/apps/secret/versions/13/content_urls", query), null)
+                .SendRequest(new ApiGetRequest("1/apps/secret/versions/13/content_urls", query), null,
+                    CancellationToken.Empty)
                 .Returns(new ApiResponse(body));
 
-            var contentUrls = _apiConnection.GetAppVersionContentUrls("secret", 13, country, null);
+            var contentUrls =
+                _apiConnection.GetAppVersionContentUrls("secret", 13, country, null, CancellationToken.Empty);
 
             contentUrls.Length.Should().Be(2);
             contentUrls[0].Url.Should().Be("http://first");
@@ -58,10 +61,12 @@ namespace Test
             var query = country == null ? string.Empty : $"country={country}";
 
             _baseApiConnection
-                .SendRequest(new ApiGetRequest("/1/apps/secret/versions/13/diff_urls", query), null)
+                .SendRequest(new ApiGetRequest("1/apps/secret/versions/13/diff_urls", query), null,
+                    CancellationToken.Empty)
                 .Returns(new ApiResponse(body));
 
-            var contentUrls = _apiConnection.GetAppVersionDiffUrls("secret", 13, country, null);
+            var contentUrls =
+                _apiConnection.GetAppVersionDiffUrls("secret", 13, country, null, CancellationToken.Empty);
 
             contentUrls.Length.Should().Be(2);
             contentUrls[0].Url.Should().Be("http://first");

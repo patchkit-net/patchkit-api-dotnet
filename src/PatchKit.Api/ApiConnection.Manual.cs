@@ -2,6 +2,7 @@ using System.Text;
 using Newtonsoft.Json;
 using PatchKit.Api.Models;
 using PatchKit.Core;
+using PatchKit.Core.Cancellation;
 using PatchKit.Core.Collections.Immutable;
 using PatchKit.Network;
 
@@ -9,7 +10,8 @@ namespace PatchKit.Api
 {
     public partial class ApiConnection
     {
-        public App PostUserApplication(string apiKey, string name, string platform, Timeout? timeout)
+        public App PostUserApplication(string apiKey, string name, string platform, Timeout? timeout,
+            CancellationToken cancellationToken)
         {
             string path = "/1/apps";
             string query = "api_key=" + apiKey;
@@ -18,7 +20,7 @@ namespace PatchKit.Api
             var content = Encoding.ASCII.GetBytes(contentText).ToImmutableArray();
 
             var response = _baseApiConnection.SendRequest(new ApiPostRequest(path, query, content,
-                HttpPostRequestContentType.ApplicationXWWWFormUrlEncoded), timeout);
+                HttpPostRequestContentType.ApplicationXWWWFormUrlEncoded), timeout, cancellationToken);
 
             return JsonConvert.DeserializeObject<App>(response.Body);
         }

@@ -41,6 +41,7 @@ def generate(name)
     cw.write_using_namespace models_namespace
     cw.write_using_namespace "PatchKit.Core.Collections.Immutable"
     cw.write_using_namespace "PatchKit.Core"
+    cw.write_using_namespace "PatchKit.Core.Cancellation"
     cw.write_using_namespace "Newtonsoft.Json"
     cw.write_using_namespace "System.Collections.Generic"
     cw.write_using_namespace "System"
@@ -58,6 +59,7 @@ def generate(name)
     cw.write_using_namespace models_namespace
     cw.write_using_namespace "PatchKit.Core.Collections.Immutable"
     cw.write_using_namespace "PatchKit.Core"
+    cw.write_using_namespace "PatchKit.Core.Cancellation"
     cw.write nil
     cw.write_block "namespace PatchKit.Api" do
       cw.write_block "public partial interface I#{name}ApiConnection" do
