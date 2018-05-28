@@ -532,6 +532,13 @@
             "description": "Country iso code",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "key_secret",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "Key secret provided by key server. This value is optional and is needed only if application is secured by license keys."
           }
         ],
         "responses": {
@@ -576,6 +583,13 @@
             "description": "Country iso code",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "key_secret",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "Key secret provided by key server. This value is optional and is needed only if application is secured by license keys."
           }
         ],
         "responses": {

@@ -176,7 +176,8 @@ namespace PatchKit.Api
         /// <param name="appSecret">Secret of an application.</param>
         /// <param name="versionId">Version id.</param>
         /// <param name="country">Country iso code</param>
-        public ResourceUrl[] GetAppVersionContentUrls(string appSecret, int versionId, string country = null)
+        /// <param name="keySecret">Key secret provided by key server. This value is optional and is needed only if application is secured by license keys.</param>
+        public ResourceUrl[] GetAppVersionContentUrls(string appSecret, int versionId, string country = null, string keySecret = null)
         {
             string path = "/1/apps/{app_secret}/versions/{version_id}/content_urls";
             List<string> queryList = new List<string>();
@@ -185,6 +186,10 @@ namespace PatchKit.Api
             if (country != null)
             {
                 queryList.Add("country="+country);
+            }
+            if (keySecret != null)
+            {
+                queryList.Add("key_secret="+keySecret);
             }
             string query = string.Join("&", queryList.ToArray());
             var response = GetResponse(path, query);
@@ -197,7 +202,8 @@ namespace PatchKit.Api
         /// <param name="appSecret">Secret of an application.</param>
         /// <param name="versionId">Version id.</param>
         /// <param name="country">Country iso code</param>
-        public ResourceUrl[] GetAppVersionDiffUrls(string appSecret, int versionId, string country = null)
+        /// <param name="keySecret">Key secret provided by key server. This value is optional and is needed only if application is secured by license keys.</param>
+        public ResourceUrl[] GetAppVersionDiffUrls(string appSecret, int versionId, string country = null, string keySecret = null)
         {
             string path = "/1/apps/{app_secret}/versions/{version_id}/diff_urls";
             List<string> queryList = new List<string>();
@@ -206,6 +212,10 @@ namespace PatchKit.Api
             if (country != null)
             {
                 queryList.Add("country="+country);
+            }
+            if (keySecret != null)
+            {
+                queryList.Add("key_secret="+keySecret);
             }
             string query = string.Join("&", queryList.ToArray());
             var response = GetResponse(path, query);
