@@ -1,45 +1,27 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Text;
-using Newtonsoft.Json.Linq;
-using PatchKit.Network;
+﻿using PatchKit.Core;
 
 namespace PatchKit.Api
 {
-    internal class ApiResponse : IApiResponse
+    public struct ApiResponse : IValidatable
     {
-        public ApiResponse(IHttpResponse httpResponse)
+        public ApiResponse(string body)
         {
-            HttpResponse = httpResponse;
-
-            var responseStream = HttpResponse.ContentStream;
-
-            if (HttpResponse.CharacterSet == null || responseStream == null)
-            {
-                throw new WebException("Invalid response from API server.");
-            }
-
-            var responseEncoding = Encoding.GetEncoding(HttpResponse.CharacterSet);
-
-            using (var streamReader = new StreamReader(responseStream, responseEncoding))
-            {
-                Body = streamReader.ReadToEnd();
-            }
+            Body = body;
         }
 
-        public IHttpResponse HttpResponse { get; private set; }
+        public string Body { get; }
 
-        public string Body { get; private set; }
-
-        public JToken GetJson()
+        public string ValidationError
         {
-            return JToken.Parse(Body);
-        }
+            get
+            {
+                if (Body == null)
+                {
+                    return "Body cannot be null.";
+                }
 
-        void IDisposable.Dispose()
-        {
-            HttpResponse.Dispose();
+                return null;
+            }
         }
     }
 }

@@ -1,33 +1,35 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using PatchKit.Core;
 
 namespace PatchKit.Api
 {
     /// <summary>
     /// Describes API server.
     /// </summary>
-    [Serializable]
-    public struct ApiConnectionServer
+    public struct ApiConnectionServer : IValidatable
     {
+        public ApiConnectionServer(string host, int port, bool useHttps)
+        {
+            Host = host;
+            Port = port;
+            UseHttps = useHttps;
+        }
+
         /// <summary>
         /// Server host url.
         /// </summary>
-        [NotNull]
-        public string Host;
+        public string Host { get; }
 
         /// <summary>
         /// Port used for connection with server.
         /// </summary>
-        public int Port;
+        public int Port { get; }
 
         /// <summary>
-        /// Actual port used for connection with server.
-        /// If <see cref="Port"/> is set to <c>0</c>, other values are used:
-        /// - when <see cref="UseHttps"/> is set to <c>false</c> then used port is <c>80</c>
-        /// - when <see cref="UseHttps"/> is set to <c>true</c> then used port is <c>443</c>
-        /// Otherwise, returns value provided by <see cref="Port"/>.
+        /// Set to true to use https instead of http.
         /// </summary>
-        internal int RealPort
+        public bool UseHttps { get; }
+
+        /*internal int RealPort
         {
             get
             {
@@ -37,11 +39,23 @@ namespace PatchKit.Api
                 }
                 return Port;
             }
-        }
+        }*/
+        public string ValidationError
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Host))
+                {
+                    return "Host cannot be null or empty.";
+                }
 
-        /// <summary>
-        /// Set to true to use https instead of http.
-        /// </summary>
-        public bool UseHttps;
+                if (Port < 0)
+                {
+                    return "Port cannot be less than zero.";
+                }
+
+                return null;
+            }
+        }
     }
 }

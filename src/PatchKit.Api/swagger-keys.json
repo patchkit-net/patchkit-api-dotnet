@@ -143,23 +143,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "_metadata": {
-                                    "type": "object",
-                                    "properties": {
-                                        "total_count": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                },
-                                "keys": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/definitions/LicenseKey"
-                                    }
-                                }
-                            }
+                            "$ref": "#/definitions/LicenseKeysCollection"
                         }
                     },
                     "403": {
@@ -496,6 +480,28 @@
                 "key": "J93N-3JND-K2MB-DK24-SK3B",
                 "app_secret": "39b290146bea6ce975c37cfc23",
                 "key_secret": "39b290146bea6ce975c37cfc23"
+            }
+        },
+        "LicenseKeysCollection": {
+            "type": "object",
+            "properties": {
+                "_metadata": {
+                    "$ref": "#/definitions/LicenseKeysCollectionMetaData"
+                },
+                "keys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/LicenseKey"
+                    }
+                }
+            }
+        },
+        "LicenseKeysCollectionMetaData": {
+            "type": "object",
+            "properties": {
+                "total_count": {
+                    "type": "integer"
+                }
             }
         },
         "Job": {

@@ -39,11 +39,20 @@
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
       <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="PatchKit.Logging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Condition="!Exists('..\..\..\patchkit-logging-dotnet\src\PatchKit.Logging\PatchKit.Logging.csproj')" Include="PatchKit.Logging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>../packages/PatchKit.Logging.1.1.1/lib/net35/PatchKit.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="PatchKit.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>../packages/PatchKit.Network.1.0.1/lib/net35/PatchKit.Network.dll</HintPath>
+    <Reference Condition="!Exists('..\..\..\patchkit-network-dotnet\src\PatchKit.Network\PatchKit.Network.csproj')" Include="PatchKit.Network, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\PatchKit.Network.1.1.0\lib\net35\PatchKit.Network.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\packages\CommonServiceLocator.1.0\lib\NET35\Microsoft.Practices.ServiceLocation.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\packages\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity.Configuration, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\packages\Unity.2.1.505.2\lib\NET35\Microsoft.Practices.Unity.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -51,22 +60,35 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiConnection.cs" />
+    <Compile Include="ApiCache.cs" />
+    <Compile Include="ApiGetRequest.cs" />
+    <Compile Include="ApiPostRequest.cs" />
+    <Compile Include="BaseApiConnection.cs" />
     <Compile Include="ApiConnectionServer.cs" />
     <Compile Include="ApiServerConnectionException.cs" />
+    <Compile Include="BaseApiConnectionFactory.cs" />
+    <Compile Include="IApiCache.cs" />
+    <Compile Include="IApiConnection.cs" />
+    <Compile Include="IApiConnection.Manual.cs" />
+    <Compile Include="IApiConnection.Generated.cs" />
+    <Compile Include="IBaseApiConnection.cs" />
+    <Compile Include="IBaseApiConnectionFactory.cs" />
+    <Compile Include="IKeysApiConnection.cs" />
+    <Compile Include="IKeysApiConnection.Generated.cs" />
     <Compile Include="KeysApiConnection.cs" />
     <Compile Include="KeysApiConnection.Generated.cs" />
-    <Compile Include="MainApiConnection.cs" />
+    <Compile Include="ApiConnection.cs" />
+    <Compile Include="ApiConnection.Generated.cs" />
+    <Compile Include="ApiConnection.Manual.cs" />
     <Compile Include="ApiConnectionException.cs" />
     <Compile Include="ApiConnectionSettings.cs" />
     <Compile Include="ApiResponse.cs" />
-    <Compile Include="IApiResponse.cs" />
-    <Compile Include="MainApiConnection.Generated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\AssemblyModule.cs" />
     <Compile Include="Properties\Version.cs" />
     <Compile Include="ApiResponseException.cs" />
     <Compile Include="Utilities\UnixTimeConvert.cs" />
-    <Compile Include="Models\*\*.cs" />
+    <Compile Include="Models\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\CHANGELOG.md">
@@ -78,7 +100,25 @@
     <None Include="..\..\README.md">
       <Link>README.md</Link>
     </None>
+    <None Include="Generator\*">
+    </None>
     <None Include="packages.config" />
+    <None Include="swagger-keys.json" />
+    <None Include="swagger.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Condition="Exists('..\..\..\patchkit-logging-dotnet\src\PatchKit.Logging\PatchKit.Logging.csproj')" Include="..\..\..\patchkit-logging-dotnet\src\PatchKit.Logging\PatchKit.Logging.csproj">
+      <Project>{c2197d71-3149-4a2f-9d3f-f0134790894d}</Project>
+      <Name>PatchKit.Logging</Name>
+    </ProjectReference>
+    <ProjectReference Condition="Exists('..\..\..\patchkit-network-dotnet\src\PatchKit.Network\PatchKit.Network.csproj')" Include="..\..\..\patchkit-network-dotnet\src\PatchKit.Network\PatchKit.Network.csproj">
+      <Project>{ee5fbfa6-cf9a-4393-b052-0757457fdfdb}</Project>
+      <Name>PatchKit.Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\patchkit-patching-dotnet\src\PatchKit.Core\PatchKit.Core.csproj">
+      <Project>{a9c2bfaf-eb0a-426e-be78-97d93dec47e3}</Project>
+      <Name>PatchKit.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

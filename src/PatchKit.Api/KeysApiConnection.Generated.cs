@@ -1,47 +1,67 @@
 using PatchKit.Api.Models.Keys;
+using PatchKit.Core.Collections.Immutable;
+using PatchKit.Core;
+using PatchKit.Core.Cancellation;
+using Newtonsoft.Json;
 using System.Collections.Generic;
+using System;
 
 namespace PatchKit.Api
 {
     public partial class KeysApiConnection
     {
-        
-        /// <param name="guid"></param>
-        public Job GetJobInfo(string guid)
+        public Job GetJobInfo(string guid, Timeout? timeout, CancellationToken cancellationToken)
         {
-            string path = "/v2/jobs/{guid}";
-            path = path.Replace("{guid}", guid.ToString());
+            if (guid == null)
+            {
+                throw new ArgumentNullException(nameof(guid));
+            }
+            timeout?.ThrowArgumentExceptionIfNotValid(nameof(timeout));
+            string path = "v2/jobs/{guid}";
             string query = string.Empty;
-            var response = GetResponse(path, query);
-            return ParseResponse<Job>(response);
+            SetPathParam(ref path, "guid", guid.ToString());
+            var response = _baseApiConnection.SendRequest(new ApiGetRequest(path, query), timeout, cancellationToken);
+            return JsonConvert.DeserializeObject<Job>(response.Body);
         }
         
-        
-        
-        
-        /// <summary>
-        /// Gets key info. Required providing an app secret. Will find only key that matches given app_secret. This request registers itself as key usage until valid key_secret is providen with this request.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="appSecret"></param>
-        /// <param name="keySecret">If provided and valid, will only do a blocked check.</param>
-        public LicenseKey GetKeyInfo(string key, string appSecret, string keySecret = null)
+        public LicenseKeysCollection GetCollectionKeys(int collectionId, string token, int size, int offset, Timeout? timeout, CancellationToken cancellationToken)
         {
-            string path = "/v2/keys/{key}";
-            List<string> queryList = new List<string>();
-            path = path.Replace("{key}", key.ToString());
-            queryList.Add("app_secret="+appSecret);
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+            timeout?.ThrowArgumentExceptionIfNotValid(nameof(timeout));
+            string path = "v2/collections/{collection_id}/keys";
+            string query = string.Empty;
+            SetPathParam(ref path, "collection_id", collectionId.ToString());
+            //TODO: Unsupported parameter kind 'header'
+            SetQueryParam(ref query, "size", size.ToString());
+            SetQueryParam(ref query, "offset", offset.ToString());
+            var response = _baseApiConnection.SendRequest(new ApiGetRequest(path, query), timeout, cancellationToken);
+            return JsonConvert.DeserializeObject<LicenseKeysCollection>(response.Body);
+        }
+        
+        public LicenseKey GetKeyInfo(string key, string appSecret, string keySecret, Timeout? timeout, CancellationToken cancellationToken)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+            if (appSecret == null)
+            {
+                throw new ArgumentNullException(nameof(appSecret));
+            }
+            timeout?.ThrowArgumentExceptionIfNotValid(nameof(timeout));
+            string path = "v2/keys/{key}";
+            string query = string.Empty;
+            SetPathParam(ref path, "key", key.ToString());
+            SetQueryParam(ref query, "app_secret", appSecret.ToString());
             if (keySecret != null)
             {
-                queryList.Add("key_secret="+keySecret);
+                SetQueryParam(ref query, "key_secret", keySecret.ToString());
             }
-            string query = string.Join("&", queryList.ToArray());
-            var response = GetResponse(path, query);
-            return ParseResponse<LicenseKey>(response);
+            var response = _baseApiConnection.SendRequest(new ApiGetRequest(path, query), timeout, cancellationToken);
+            return JsonConvert.DeserializeObject<LicenseKey>(response.Body);
         }
-        
-        
-        
-        
     }
 }

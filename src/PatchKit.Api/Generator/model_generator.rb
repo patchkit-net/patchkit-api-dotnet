@@ -1,43 +1,29 @@
 require_relative "base_generator.rb"
+require_relative "api_model_resolver.rb"
+require_relative "text_formatting.rb"
 
 class ModelGenerator < BaseGenerator
+  attr_reader :output
+
   def initialize(api_name, name, data)
     super()
     @api_name = api_name
     @name = name
     @data = data
+    generate
   end
 
-  def write_json_property(property_name)
-    write "[JsonProperty(\"#{property_name}\")]"
-  end
-
-  def write_property(property_name, property)
-    write_docs_summary property
-    write_json_property property_name
-    write "public #{resolve_type(property)} #{upper_camel_case(property_name)};"
-  end
-
-  def write_properties
-    @data["properties"].each do |property_name, property|
-      write_property(property_name, property)
-      write nil
-    end
-  end
-
+private
   def generate
-    super()
+    @output = ""
 
     return if @data["type"] != "object"
 
-    write "using Newtonsoft.Json;"
+    write_using_namespace "Newtonsoft.Json"
+    write_using_namespace "PatchKit.Core.Collections.Immutable"
     write nil
-    write_block "namespace PatchKit.Api.Models.#{@api_name}" do
-      write_block "public struct #{@name}" do
-        write_properties
-      end
+    write_block "namespace #{models_namespace(@api_name)}" do
+      write resolve_api_model(@name, @data).struct
     end
-
-    @output
   end
 end
